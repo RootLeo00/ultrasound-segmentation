@@ -12,10 +12,9 @@ def TL_unet_model(input_shape, NUM_CLASSES):
     # input: input_shape (height, width, channels) 
     # return model
 
-    #layer di preproce3ssing input
+    #layer di preprocessing input
     inputs = keras.Input(shape=input_shape)
     preprocess_input = tf.keras.applications.vgg16.preprocess_input(inputs)
-    input_shape = input_shape
 
     base_VGG = VGG16(
                     include_top = False, #tolgo i classifier/fully connecred layers (no dense and output layers)
@@ -64,13 +63,7 @@ def TL_unet_model(input_shape, NUM_CLASSES):
 
     model_ = Model(inputs=inputs, outputs=[conv10], name="VGG16_U-Net") #[base_VGG.input]
 
+    #compile in the train program to make it easy to test with various loss functions
     return model_
 
 
-# Free up RAM in case the model definition cells were run multiple times
-keras.backend.clear_session()
-
-# Build model
-input_shape=params.IMAGE_SIZE + (3,)
-model = TL_unet_model(input_shape, params.NUM_CLASSES)
-# model.summary()  # print model summary

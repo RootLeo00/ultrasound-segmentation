@@ -77,6 +77,8 @@ def unet(IMAGE_SIZE, NUM_CLASSES):
 
     # Define the model
     model = keras.Model(inputs=[inputs], outputs=[outputs])
+
+    #compile in the train program to make it easy to test with various loss functions
     return model
 
 
