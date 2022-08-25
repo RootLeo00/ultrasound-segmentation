@@ -3,7 +3,8 @@ import os
 from tensorflow.keras.preprocessing.image import load_img
 import numpy as np
 
-from main import IMAGE_SIZE, train_dir, test_dir
+from params import IMAGE_SIZE, train_dir, test_dir
+
 
 def get_path_arrays(dir_path, type):
     if type == "input":
@@ -87,3 +88,9 @@ def get_test_dataset():
 # plt.subplot(2,1,2)
 # plt.imshow(img_m)
 # plt.show()
+
+
+#TODO: inizializzare meglio test_input_img_paths e test_mask_img_paths
+test_input_img_paths = get_path_arrays(test_dir, "input")
+test_mask_img_paths = get_path_arrays(
+        test_dir, "mask")  # è ovviamente vuoto
