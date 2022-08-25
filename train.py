@@ -15,6 +15,7 @@ from utils.fine_tuning import finetune_unfreezeall
 from utils.metrics import recall_m, precision_m
 from utils.load_dataset import get_train_dataset
 
+#TODO: inizializzare meglio
 from models.unet import unet
 model = unet(IMAGE_SIZE=IMAGE_SIZE, NUM_CLASSES=NUM_CLASSES)
 
