@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import datetime
 import os
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import load_img
@@ -7,16 +6,15 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import tensorflow as tf
-from train import train, model
+from train import model
 
-from main import base_dir
-from utils.load_dataset import test_input_img_paths, test_mask_img_paths
+from params import base_dir, pred_dir
+from utils.load_dataset import test_input_img_paths, test_mask_img_paths, get_test_dataset
 
 
 # PREDICTION
-def predict():
+def predict_func():
         
-    pred_dir = base_dir+"predictions"+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     os.mkdir(pred_dir)
     (test_images, test_mask) = get_test_dataset()
     print('\n\n--------------PREDICT--------------------------')
@@ -26,7 +24,6 @@ def predict():
     """use the model to do prediction with model.predict()"""
     mask_predictions = model.predict(test_images,
                                     verbose=2)
-
 
     def display_mask(i, predictions):
         """Quick utility to display a model's prediction."""

@@ -4,7 +4,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras import backend as K
-from predict import pred_dir
+from params import pred_dir
 
 #TODO: copiare plot dei grafici da script (fa dei plot più carini) 
 
@@ -38,6 +38,14 @@ def precision_m(y_true, y_pred):
     predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
     precision = true_positives / (predicted_positives + K.epsilon())
     return precision
+
+#mean iou
+#we have to convert this in cathegorical. Whenyou do multiclass classification
+#problem you convert into categorical: instead of class 1,2,3,4 or 0,1,2,3
+#you have class 1 (all zeros), etc 
+# from tensorflow.keras.utils import to_categorical
+# train_mask_cat = to_categorical(y_train, num_classes=NUMCLASSES) #(eg, (1152,1128,128,4))
+# test_mask_cat = to_categorical(y_test, num_classes=NUMCLASSES)
 
 
 #GRAPHS
