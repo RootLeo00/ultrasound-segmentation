@@ -46,6 +46,12 @@ if args and args[0].startswith("TP"):
                             choices=['UNET', 'TRANSFER_LEARNING_VGG16', 'TRANSFER_LEARNING_VGG19'],
                             help="name of the model to train",
                             )
+        parser.add_argument("-s","--save-path", 
+                            nargs='+',
+                            required=False,
+                            default=parser.parse_args(args=args).dir_dataset[0],
+                            help="absolute directory path where store results",
+                            )
 else:
         parser = argparse.ArgumentParser(prog='P', usage='%(prog)s [options]')
         parser.add_argument("-TP","--train-and-predict",
@@ -85,6 +91,12 @@ else:
                             required=True,
                             help="absolute directory path where dataset is stored",
                             )
+        parser.add_argument("-s","--save-path", 
+                            nargs='+',
+                            required=False,
+                            default=os.path.dirname(parser.parse_args(args=args).model_weights[0].name),
+                            help="absolute directory path where store results",
+                            )
 args = parser.parse_args(args=args)
 
 #TODO: inizializzare meglio
@@ -96,7 +108,7 @@ IMAGE_SIZE = (224, 224)
 NUM_CLASSES = 3
 BATCH_SIZE = 8
 EPOCHS=0
-pred_dir = base_dir+"predictions"+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+pred_dir = args.save_path+"/predictions"+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
 if args.only_predict:
     program='ONLY_PREDICT'
@@ -108,7 +120,6 @@ if args.train_and_predict:
     program='TRAIN_AND_PREDICT'
     description=args.comment[0]
     base_dir=args.dir_dataset[0]
-    weights_path=args.model_weights[0].name
     MODEL_NAME=args.model_name[0]
     EPOCHS=args.epochs[0]
     
