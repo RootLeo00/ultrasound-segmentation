@@ -8,7 +8,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, concatenate
 
 #DEFINE THE MODEL
-def TL_unet_model(input_shape, NUM_CLASSES):
+def get_model(input_shape, num_classes):
     # input: input_shape (height, width, channels) 
     # return model
 
@@ -57,7 +57,7 @@ def TL_unet_model(input_shape, NUM_CLASSES):
     conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(concat_4)
     conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
 
-    conv10 = Conv2D(NUM_CLASSES, 3, padding="same", activation="softmax")(conv9) #HO CAMBIATO QUESTO    
+    conv10 = Conv2D(num_classes, 3, padding="same", activation="softmax")(conv9) #HO CAMBIATO QUESTO    
     print(conv10.shape)
 
 

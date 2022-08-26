@@ -46,7 +46,7 @@ def decoder_block(input, skip_features, num_filters):
 
 
 # Unet pre-trained model with VGG16 (weights: imagenet) 
-def TL_unet_model(input_shape, NUM_CLASSES):
+def get_model(input_shape, num_classes):
     # input: input_shape (height, width, channels) 
     # return model
 
@@ -75,7 +75,7 @@ def TL_unet_model(input_shape, NUM_CLASSES):
     d4 = decoder_block(d3, s1, 64)                      ## (512 x 512)
 
     """ Output """
-    outputs = Conv2D(NUM_CLASSES, 3, padding="same", activation="softmax")(d4)
+    outputs = Conv2D(num_classes, 3, padding="same", activation="softmax")(d4)
 
     model = Model(inputs, outputs, name="VGG19_U-Net")
     for layer in vgg19.layers:

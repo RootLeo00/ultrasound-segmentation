@@ -22,8 +22,8 @@ from tensorflow.keras import backend as K
 
 
 
-def unet(IMAGE_SIZE, NUM_CLASSES):
-    inputs = keras.Input(shape=IMAGE_SIZE + (3,)) #aggiungo l'rgb (?)
+def get_model(input_shape, num_classes):
+    inputs = keras.Input(shape=input_shape + (3,)) #aggiungo l'rgb (?)
 
     ### [First half of the network: downsampling inputs] ###
 
@@ -73,7 +73,7 @@ def unet(IMAGE_SIZE, NUM_CLASSES):
         previous_block_activation = x  # Set aside next residual
 
     # Add a per-pixel classification layer
-    outputs = layers.Conv2D(NUM_CLASSES, 3, activation="softmax", padding="same")(x)
+    outputs = layers.Conv2D(num_classes, 3, activation="softmax", padding="same")(x)
 
     # Define the model
     model = keras.Model(inputs=[inputs], outputs=[outputs])
