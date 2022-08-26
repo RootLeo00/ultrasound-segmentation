@@ -12,14 +12,18 @@ from tensorflow import keras
 
 from params import IMAGE_SIZE, model_dir, MODEL_NAME, NUM_CLASSES, BATCH_SIZE, EPOCHS
 from utils.fine_tuning import finetune_unfreezeall
-from utils.metrics import recall_m, precision_m
 from utils.load_dataset import get_train_dataset
+from utils.metrics.iou import mean_iou
 
 #TODO: inizializzare meglio
-from models.unet import unet
-model = unet(IMAGE_SIZE=IMAGE_SIZE, NUM_CLASSES=NUM_CLASSES)
-history_TL=''
 train_mask=''
+if MODEL_NAME == "UNET":
+    from models.unet import get_model
+elif MODEL_NAME == "TRANSFER_LEARNING_VGG16":
+    from models.vgg16 import get_model
+elif MODEL_NAME == "TRANSFER_LEARNING_VGG19":
+    from models.vgg19 import get_model
+model = get_model(input_shape=IMAGE_SIZE, num_classes=NUM_CLASSES)
 
 def train():
 
@@ -32,21 +36,6 @@ def train():
     print("Seconds occurred to load train and test dataset: "+str(end-start))
 
     input_shape = IMAGE_SIZE + (3,)
-    # from models.unet import unet
-    # model = unet(IMAGE_SIZE=IMAGE_SIZE, NUM_CLASSES=NUM_CLASSES)
-    # COMPILE MODEL
-
-    if MODEL_NAME == "UNET":
-        from models.unet import unet
-        model = unet(IMAGE_SIZE=IMAGE_SIZE, NUM_CLASSES=NUM_CLASSES)
-    elif MODEL_NAME == "TRANSFER_LEARNING_VGG16":
-        from models.vgg16 import TL_unet_model
-        model = TL_unet_model(input_shape=input_shape, NUM_CLASSES=NUM_CLASSES)
-    elif MODEL_NAME == "TRANSFER_LEARNING_VGG19":
-        from models.vgg19 import TL_unet_model
-        model = TL_unet_model(input_shape=input_shape, NUM_CLASSES=NUM_CLASSES)
-    """Config the model with losses and metrics with model.compile()"""
-    print("shape of the mask: " + str(train_mask[0].shape))
     
     #IMBALANCED CLASSIFICATION - CLASS WEIGHTS
     """Class weights calculated by sklearn"""
@@ -69,7 +58,8 @@ def train():
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4, name="Adam")
     # loss=weightedLoss(tf.keras.losses.SparseCategoricalCrossentropy(), class_weights)
     loss = tf.keras.losses.SparseCategoricalCrossentropy()
-    metrics = ["accuracy"]
+
+    metrics = ["accuracy", mean_iou]
     
     
     start = time.time()
@@ -104,6 +94,7 @@ def train():
     """train the model with model.fit()"""
     callbacks = [tensorboard_callback, cp_callback, early_stopping]  # early_stopping
     start = time.time()
+    
     history_TL = model.fit(x=train_images, 
                              y=train_mask,
                              batch_size=BATCH_SIZE,
@@ -158,3 +149,15 @@ def train():
         )
         end = time.time()
         print("Seconds occurred to fit the model: "+str(end-start))
+        
+    #save keras.callbacks.History  into json
+    import json
+    # Get the dictionary containing each metric and the loss for each epoch
+    history_dict = history_TL.history
+    # Save it under the form of a json file
+    json.dump(history_dict, open(model_dir+'/history.json', 'w'))
+    
+def load_model(weights_path):
+    # Create model with weights from hdf5 file
+    print(weights_path)
+    model.load_weights(weights_path)
