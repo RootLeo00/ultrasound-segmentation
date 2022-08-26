@@ -6,16 +6,17 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import tensorflow as tf
-from train import model, history_TL
-from utils.metrics import iou_single_class, iou, Iou_Graph
+from train import model
+from utils.metrics.graph import graph
+import json
 
-from params import base_dir, pred_dir
+from params import base_dir, pred_dir, model_dir
 from utils.load_dataset import test_input_img_paths, test_mask_img_paths, get_test_dataset
 
 
 # PREDICTION
 def predict_func():
-        
+
     os.mkdir(pred_dir)
     (test_images, test_mask) = get_test_dataset()
     print('\n\n--------------PREDICT--------------------------')
@@ -24,7 +25,7 @@ def predict_func():
     # Display results for prediction
     """use the model to do prediction with model.predict()"""
     mask_predictions = model.predict(test_images,
-                                    verbose=2)
+                                     verbose=2)
 
     def display_mask(i, predictions):
         """Quick utility to display a model's prediction."""
@@ -50,15 +51,27 @@ def predict_func():
         plt.subplot(3, 1, 3)
         plt.imshow(mpimg.imread(test_mask_img_paths[i]))
         plt.savefig(pred_dir+"/prediction_"+str(i)+".png")
-        # plt.show()
-        
-    history_iou=[0 for i in range(0, 3)] #TODO inizializza meglio
+        plt.show()
+
+    # history_iou=[0 for i in range(0, 3)] #TODO inizializza meglio
     for i in range(3):
         display_mask(i, mask_predictions)
-        #analize mean ioou
-        history_iou[i]=iou(test_mask, mask_predictions)
-        
-        
 
 
-    Iou_Graph(history_iou)
+    history_dict = json.load(open(model_dir+'/history.json', 'r'))
+    # Mean IOU graph
+    graph(history_dict,
+          title='Mean IoU Graph',
+          xlabel='Epochs',
+          ylabel='Mean IoU',
+          history_name='mean_iou',
+          history_val_name='val_mean_iou',
+          save_path=pred_dir+'/mean_iou_graph.png')
+    # Accuracy graph
+    graph(history_dict,
+          title='Accuracy Graph',
+          xlabel='Epochs',
+          ylabel='Accuracy',
+          history_name='accuracy',
+          history_val_name='val_accuracy',
+          save_path=pred_dir+'/accuracy_graph.png')
