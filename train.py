@@ -18,6 +18,8 @@ from utils.load_dataset import get_train_dataset
 #TODO: inizializzare meglio
 from models.unet import unet
 model = unet(IMAGE_SIZE=IMAGE_SIZE, NUM_CLASSES=NUM_CLASSES)
+history_TL=''
+train_mask=''
 
 def train():
 
@@ -68,8 +70,6 @@ def train():
     # loss=weightedLoss(tf.keras.losses.SparseCategoricalCrossentropy(), class_weights)
     loss = tf.keras.losses.SparseCategoricalCrossentropy()
     metrics = ["accuracy"]
-
-
     
     
     start = time.time()
