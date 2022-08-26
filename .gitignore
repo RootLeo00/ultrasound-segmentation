@@ -1,9 +1,5 @@
-models/__pycache__/unet.cpython-38.pyc
-utils/__pycache__/fine_tuning.cpython-38.pyc
-utils/__pycache__/load_dataset.cpython-38.pyc
-utils/__pycache__/metrics.cpython-38.pyc
-__pycache__/main.cpython-38.pyc
-__pycache__/params.cpython-38.pyc
-__pycache__/predict.cpython-38.pyc
-__pycache__/train.cpython-38.pyc
+models/__pycache__/*
+utils/__pycache__/*
+__pycache__/*
 logs/fit/*
+utils/metrics/__pycache__/*
