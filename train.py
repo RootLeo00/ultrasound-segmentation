@@ -25,7 +25,7 @@ elif MODEL_NAME == "TRANSFER_LEARNING_VGG16":
     from models.vgg16 import get_model
 elif MODEL_NAME == "TRANSFER_LEARNING_VGG19":
     from models.vgg19 import get_model
-model = get_model(input_shape=IMAGE_SIZE, num_classes=NUM_CLASSES)
+model = get_model(image_size=IMAGE_SIZE, num_classes=NUM_CLASSES)
 
 def train():
 
@@ -72,12 +72,12 @@ def train():
     metrics = ["accuracy", mean_iou, 
             #    f1score,
          #custom_f1_macro,
-    #     tfa.metrics.F1Score(
-    #     num_classes= NUM_CLASSES,
-    #     average=None,
-    #     threshold=0.5,
-    #     name = 'f1_score',
-    # )
+        tfa.metrics.F1Score(
+        num_classes= NUM_CLASSES,
+        average=None,
+        threshold=0.5,
+        name = 'f1_score',
+    )
     ]
     
     start = time.time()
