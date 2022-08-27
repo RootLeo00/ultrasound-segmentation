@@ -14,9 +14,11 @@ from params import IMAGE_SIZE, model_dir, MODEL_NAME, NUM_CLASSES, BATCH_SIZE, E
 from utils.fine_tuning import finetune_unfreezeall
 from utils.load_dataset import get_train_dataset
 from utils.metrics.iou import mean_iou
+from utils.metrics.f1_score import f1score, custom_f1_macro, f1score_sm
+from tensorflow.keras.utils import to_categorical
 
 #TODO: inizializzare meglio
-train_mask=''
+train_masks=''
 if MODEL_NAME == "UNET":
     from models.unet import get_model
 elif MODEL_NAME == "TRANSFER_LEARNING_VGG16":
@@ -31,9 +33,16 @@ def train():
     keras.backend.clear_session()
 
     start = time.time()
-    (train_images, train_mask) = get_train_dataset()
+    (train_images, train_masks) = get_train_dataset()
+    print("Class values in the dataset are ... ", np.unique(train_masks))  # 0 is the background/few unlabeled 
     end = time.time()
-    print("Seconds occurred to load train and test dataset: "+str(end-start))
+    # print("Seconds occurred to load train and test dataset: "+str(end-start))
+
+#minuto 20 di https://www.youtube.com/watch?v=F365vQ8EndQ
+    train_masks_cat = to_categorical(train_masks, num_classes=NUM_CLASSES)
+    train_masks_cat  = train_masks_cat.reshape((train_masks.shape[0], train_masks.shape[1], train_masks.shape[2], NUM_CLASSES))
+    # test_masks_cat = to_categorical(y_test, num_classes=n_classes)
+    # y_test_cat = test_masks_cat.reshape((y_test.shape[0], y_test.shape[1], y_test.shape[2], n_classes))
 
     input_shape = IMAGE_SIZE + (3,)
     
@@ -43,30 +52,37 @@ def train():
     from sklearn.utils import compute_class_weight
     class_weights = compute_class_weight(
                                                     'balanced',
-                                                    classes=np.unique(train_mask.flatten()),
-                                                    y=np.ravel(train_mask, order='C')
+                                                    classes=np.unique(train_masks.flatten()),
+                                                    y=np.ravel(train_masks, order='C')
     )
-    print(class_weights)
     # """My calculate class weights with percentage of pixels"""
     # # calculate weigths of weightedLoss (mi baso sulla priam immagine)
-    # uniques, counts = np.unique(train_mask[0].flatten(), return_counts=True)
+    # uniques, counts = np.unique(train_masks[0].flatten(), return_counts=True)
     # percentages = dict(zip(uniques, counts * 100 /
-    #                    len(train_mask[0].flatten())))
+    #                    len(train_masks[0].flatten())))
     # print(percentages)
     # class_weights = {0: np.ceil((100-percentages[0])/10), 1: np.ceil((100-percentages[1])/10), 2: np.ceil((100-percentages[2])/10) }
     # print(class_weights)
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4, name="Adam")
     # loss=weightedLoss(tf.keras.losses.SparseCategoricalCrossentropy(), class_weights)
-    loss = tf.keras.losses.SparseCategoricalCrossentropy()
-
-    metrics = ["accuracy", mean_iou]
-    
+    # loss = tf.keras.losses.SparseCategoricalCrossentropy()
+    loss='categorical_crossentropy'
+    #https://www.tensorflow.org/addons/api_docs/python/tfa/metrics/F1Score
+    import tensorflow_addons as tfa
+    metrics = ["accuracy", mean_iou, 
+            #    f1score,
+         #custom_f1_macro,
+    #     tfa.metrics.F1Score(
+    #     num_classes= NUM_CLASSES,
+    #     average=None,
+    #     threshold=0.5,
+    #     name = 'f1_score',
+    # )
+    ]
     
     start = time.time()
     model.compile(
-        # lr=learning_rate: we want to change it gently (provare però a metterlo più alto)
         optimizer=optimizer,
-        # !!! We use the "sparse" version of categorical_crossentropy because our target data is integers.
         loss=loss,
         loss_weights=class_weights,
         metrics=metrics
@@ -96,7 +112,7 @@ def train():
     start = time.time()
     
     history_TL = model.fit(x=train_images, 
-                             y=train_mask,
+                             y=train_masks_cat,
                              batch_size=BATCH_SIZE,
                              epochs=EPOCHS,
                              verbose=2,
@@ -140,7 +156,7 @@ def train():
         start = time.time()
         history_FT = FTmodel.fit(
             x=train_images,
-            y=train_mask,
+            y=train_masks,
             batch_size=BATCH_SIZE,
             epochs=EPOCHS,
             verbose=2,
