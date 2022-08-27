@@ -2,15 +2,15 @@
 import tensorflow as tf
 from tensorflow import keras
 import tensorflow as tf
-import main as params
 from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, concatenate
 
 #DEFINE THE MODEL
-def get_model(input_shape, num_classes):
+def get_model(image_size, num_classes):
     # input: input_shape (height, width, channels) 
     # return model
+    input_shape=image_size + (3,)
 
     #layer di preprocessing input
     inputs = keras.Input(shape=input_shape)

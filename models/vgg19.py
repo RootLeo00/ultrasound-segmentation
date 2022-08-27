@@ -46,9 +46,10 @@ def decoder_block(input, skip_features, num_filters):
 
 
 # Unet pre-trained model with VGG16 (weights: imagenet) 
-def get_model(input_shape, num_classes):
+def get_model(image_size, num_classes):
     # input: input_shape (height, width, channels) 
     # return model
+    input_shape=image_size + (3,)
 
     #layer di preproce3ssing input
     inputs = keras.Input(shape=input_shape)

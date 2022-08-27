@@ -22,8 +22,8 @@ from tensorflow.keras import backend as K
 
 
 
-def get_model(input_shape, num_classes):
-    inputs = keras.Input(shape=input_shape + (3,)) #aggiungo l'rgb (?)
+def get_model(image_size, num_classes):
+    inputs = keras.Input(shape=image_size + (3,)) #aggiungo l'rgb (?)
 
     ### [First half of the network: downsampling inputs] ###
 
