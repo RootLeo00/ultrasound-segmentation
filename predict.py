@@ -59,19 +59,29 @@ def predict_func():
 
 
     history_dict = json.load(open(model_dir+'/history.json', 'r'))
-    # Mean IOU graph
+    print(history_dict)
+    exit()
+    # # Mean IOU graph
+    # graph(history_dict,
+    #       title='Mean IoU Graph',
+    #       xlabel='Epochs',
+    #       ylabel='Mean IoU',
+    #       history_name='mean_iou',
+    #       history_val_name='val_mean_iou',
+    #       save_path=pred_dir+'/mean_iou_graph.png')
+    # # Accuracy graph
+    # graph(history_dict,
+    #       title='Accuracy Graph',
+    #       xlabel='Epochs',
+    #       ylabel='Accuracy',
+    #       history_name='accuracy',
+    #       history_val_name='val_accuracy',
+    #       save_path=pred_dir+'/accuracy_graph.png')
+    # F1 Score graph
     graph(history_dict,
-          title='Mean IoU Graph',
+          title='F1 Score Graph',
           xlabel='Epochs',
-          ylabel='Mean IoU',
-          history_name='mean_iou',
-          history_val_name='val_mean_iou',
-          save_path=pred_dir+'/mean_iou_graph.png')
-    # Accuracy graph
-    graph(history_dict,
-          title='Accuracy Graph',
-          xlabel='Epochs',
-          ylabel='Accuracy',
-          history_name='accuracy',
-          history_val_name='val_accuracy',
-          save_path=pred_dir+'/accuracy_graph.png')
+          ylabel='F1 Score',
+          history_name='f1_score',
+          history_val_name='val_f1_score',
+          save_path=pred_dir+'/f1_score_graph.png')

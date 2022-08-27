@@ -6,7 +6,7 @@ import os
 import argparse
 #PROG: TRAIN AND PREDICT
 args=sys.argv[1:]
-if args and args[0].startswith("TP"):
+if args and args[0].startswith("-TP"):
         parser = argparse.ArgumentParser(prog='TP', usage='%(prog)s [options]')
         parser.add_argument("-TP","--train-and-predict",
                             help="choose train and predict program", 
@@ -52,7 +52,7 @@ if args and args[0].startswith("TP"):
                             default=parser.parse_args(args=args).dir_dataset[0],
                             help="absolute directory path where store results",
                             )
-else:
+elif args and args[0].startswith("-P"):
         parser = argparse.ArgumentParser(prog='P', usage='%(prog)s [options]')
         parser.add_argument("-TP","--train-and-predict",
                             help="choose train and predict program", 
