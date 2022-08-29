@@ -1,25 +1,11 @@
-#!/usr/bin/env python3
-from calendar import EPOCH
-import os
-from tabnanny import verbose
-import tensorflow as tf
-# from IPython.display import Image, display
-from tensorflow.keras.preprocessing.image import load_img
-import PIL
-from PIL import ImageOps
-from PIL import Image as im
-import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-from tensorflow import keras
+import matplotlib.pyplot as plt
 import numpy as np
-from tensorflow.keras import layers
 import tensorflow as tf
-import random
-import time
-import sys
-import datetime
+from tensorflow import keras
 from tensorflow.keras import backend as K
-
+from tensorflow.keras import layers
+from tensorflow.keras.preprocessing.image import load_img
 
 
 def get_model(image_size, num_classes):

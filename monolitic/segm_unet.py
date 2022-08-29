@@ -311,7 +311,6 @@ def custom_dice_loss(y_actual,y_pred):
     custom_loss=dice_coef_loss_multilabel(y_actual, y_pred, M=NUM_CLASSES, smooth=0.1)
     return custom_loss
   
-"""Config the model with losses and metrics with model.compile()"""
 print("shape of the mask: "+ str(train_mask[0].shape))
 #calculate weigths of weightedLoss (mi baso sulla priam immagine)
 uniques, counts = np.unique(train_mask[0].flatten(), return_counts=True)

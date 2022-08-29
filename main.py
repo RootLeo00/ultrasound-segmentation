@@ -1,14 +1,12 @@
-#!python3
-import sys
 from params import weights_path, program
 from predict import predict_func
-from train import train, load_model
+from train import train, load_model_with_weights
 def train_and_predict():
     train()
     predict_func()
 
 def predict():
-    load_model(weights_path)
+    load_model_with_weights(weights_path)
     predict_func()
 
 if __name__ == "__main__":

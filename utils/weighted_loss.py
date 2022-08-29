@@ -53,3 +53,6 @@ def weightedLoss(originalLossFunc, weightsList):
 
         return loss
     return lossFunc
+
+#in train insert:
+# loss=weightedLoss(tf.keras.losses.SparseCategoricalCrossentropy(), class_weights)
