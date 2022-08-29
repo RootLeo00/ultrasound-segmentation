@@ -70,4 +70,26 @@ def custom_f1_macro(y_true, y_pred):
 def f1score_sm():
     sm.metrics.FScore(threshold=0.5)
     
+def my_f1score_label(history, label):
+    #get precision and recall from history
+    precision=history['precision'+label]
+    recall=history['recall'+label]
+    _f1score=[]
+    for (p,r) in (precision, recall):
+        _f1score.append(2*((p*r)/(p+r)))
+
+    return _f1score
+
+def my_f1score_label(history, label):
+    #get precision and recall from history
+    precision=history['precision'+str(label)]
+    print(precision)
+    recall=history['recall'+str(label)]
+    print(recall)
+    exit()
+    _f1score={}
+    for (p,r) in (precision, recall):
+        _f1score['f1score'+str(label)].append(2*((p*r)/(p+r)))
+
+    return _f1score
 

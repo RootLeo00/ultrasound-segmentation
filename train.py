@@ -1,59 +1,58 @@
 #!/usr/bin/env python3
-import tensorflow as tf
-from tensorflow.keras.preprocessing.image import load_img
-import matplotlib.pyplot as plt
+import datetime
+import json
+
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import time
-from tensorflow.keras.models import load_model
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow import keras
-
-from params import IMAGE_SIZE, model_dir, MODEL_NAME, NUM_CLASSES, BATCH_SIZE, EPOCHS
-from utils.fine_tuning import finetune_unfreezeall
-from utils.load_dataset import get_train_dataset
-from utils.metrics.iou import mean_iou
-from utils.metrics.f1_score import f1score, custom_f1_macro, f1score_sm
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.utils import to_categorical
 
-#TODO: inizializzare meglio
-train_masks=''
+from params import BATCH_SIZE, EPOCHS, IMAGE_SIZE, MODEL_NAME, NUM_CLASSES, model_dir
+from utils.fine_tuning import finetune_unfreezeall
+from utils.load_dataset import get_train_dataset
+from utils.metrics.f1_score import custom_f1_macro, f1score, f1score_sm, my_f1score_label
+from utils.metrics.iou import mean_iou
+import tensorflow_addons as tfa
+from sklearn.utils import compute_class_weight
+from tensorflow.keras.models import load_model
+
+# TODO: inizializzare meglio
 if MODEL_NAME == "UNET":
     from models.unet import get_model
 elif MODEL_NAME == "TRANSFER_LEARNING_VGG16":
     from models.vgg16 import get_model
+
+    # get_model_sm(num_classes=NUM_CLASSES)
 elif MODEL_NAME == "TRANSFER_LEARNING_VGG19":
     from models.vgg19 import get_model
 model = get_model(image_size=IMAGE_SIZE, num_classes=NUM_CLASSES)
 
-def train():
 
-    # Free up RAM in case the model definition cells were run multiple times
+def train():
     keras.backend.clear_session()
 
-    start = time.time()
     (train_images, train_masks) = get_train_dataset()
-    print("Class values in the dataset are ... ", np.unique(train_masks))  # 0 is the background/few unlabeled 
-    end = time.time()
-    # print("Seconds occurred to load train and test dataset: "+str(end-start))
+    # print("Class values in the dataset are ... ", np.unique(train_masks))  # 0 is the background/few unlabeled
 
-#minuto 20 di https://www.youtube.com/watch?v=F365vQ8EndQ
+    # minuto 20 di https://www.youtube.com/watch?v=F365vQ8EndQ
     train_masks_cat = to_categorical(train_masks, num_classes=NUM_CLASSES)
-    train_masks_cat  = train_masks_cat.reshape((train_masks.shape[0], train_masks.shape[1], train_masks.shape[2], NUM_CLASSES))
+    train_masks_cat = train_masks_cat.reshape(
+        (train_masks.shape[0], train_masks.shape[1], train_masks.shape[2], NUM_CLASSES)
+    )
     # test_masks_cat = to_categorical(y_test, num_classes=n_classes)
     # y_test_cat = test_masks_cat.reshape((y_test.shape[0], y_test.shape[1], y_test.shape[2], n_classes))
 
-    input_shape = IMAGE_SIZE + (3,)
-    
-    #IMBALANCED CLASSIFICATION - CLASS WEIGHTS
-    """Class weights calculated by sklearn"""
+    # IMBALANCED CLASSIFICATION - CLASS WEIGHTS
     # class_weights = [np.ceil((100-percentages[0])/10), np.ceil((100-percentages[1])/10), np.ceil((100-percentages[2])/10)]
-    from sklearn.utils import compute_class_weight
+
     class_weights = compute_class_weight(
-                                                    'balanced',
-                                                    classes=np.unique(train_masks.flatten()),
-                                                    y=np.ravel(train_masks, order='C')
+        "balanced",
+        classes=np.unique(train_masks.flatten()),
+        y=np.ravel(train_masks, order="C"),
     )
     # """My calculate class weights with percentage of pixels"""
     # # calculate weigths of weightedLoss (mi baso sulla priam immagine)
@@ -64,116 +63,111 @@ def train():
     # class_weights = {0: np.ceil((100-percentages[0])/10), 1: np.ceil((100-percentages[1])/10), 2: np.ceil((100-percentages[2])/10) }
     # print(class_weights)
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4, name="Adam")
-    # loss=weightedLoss(tf.keras.losses.SparseCategoricalCrossentropy(), class_weights)
-    # loss = tf.keras.losses.SparseCategoricalCrossentropy()
-    loss='categorical_crossentropy'
-    #https://www.tensorflow.org/addons/api_docs/python/tfa/metrics/F1Score
-    import tensorflow_addons as tfa
-    metrics = ["accuracy", mean_iou, 
-            #    f1score,
-         #custom_f1_macro,
-        tfa.metrics.F1Score(
-        num_classes= NUM_CLASSES,
-        average=None,
-        threshold=0.5,
-        name = 'f1_score',
-    )
+    loss = "categorical_crossentropy"
+    # TODO: ciclo for per le metriche
+    metrics = [
+        "accuracy",
+        tf.keras.metrics.IoU(
+            num_classes=NUM_CLASSES,
+            target_class_ids=[
+                0
+            ],  # If target_class_ids has only one id value, the IoU of that specific class is returned.
+            name="binary_iou0",
+        ),
+        tf.keras.metrics.IoU(
+            num_classes=NUM_CLASSES,
+            target_class_ids=[1],
+            name="binary_iou1",
+        ),
+        tf.keras.metrics.IoU(
+            num_classes=NUM_CLASSES,
+            target_class_ids=[2],
+            name="binary_iou2",
+        ),
+        tf.keras.metrics.MeanIoU(num_classes=NUM_CLASSES, name="mean_iou"),
+        tf.keras.metrics.Precision(name="precision0", class_id=0),
+        tf.keras.metrics.Precision(name="precision1", class_id=1),
+        tf.keras.metrics.Precision(name="precision2", class_id=2),
+        tf.keras.metrics.Recall(name="recall0", class_id=0),
+        tf.keras.metrics.Recall(name="recall1", class_id=1),
+        tf.keras.metrics.Recall(name="recall2", class_id=2),
     ]
-    
-    start = time.time()
+
     model.compile(
-        optimizer=optimizer,
-        loss=loss,
-        loss_weights=class_weights,
-        metrics=metrics
+        optimizer=optimizer, loss=loss, loss_weights=class_weights, metrics=metrics
     )
-    end = time.time()
-    print("Seconds occurred to compile model: "+str(end-start))
 
-    checkpoint_path = model_dir+'/'+MODEL_NAME+'.hdf5'
-    model_checkpoint = ModelCheckpoint(checkpoint_path,
-                                       verbose=1,
-                                       monitor='val_accuracy',
-                                       save_best_only=True)
-    cp_callback = model_checkpoint
+    checkpoint_path = model_dir + "/" + MODEL_NAME + ".hdf5"
+    cp_callback = ModelCheckpoint(
+        checkpoint_path, verbose=1, monitor="val_accuracy", save_best_only=True
+    )
 
-    import datetime
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
-        log_dir=log_dir, histogram_freq=1)
+        log_dir=log_dir, histogram_freq=1
+    )
 
-    print('\n\n--------------FITTING--------------------------')
-    # Train the model, doing validation at the end of each epoch. (?)
-    monitor = 'val_accuracy'
-    # Stop training when a monitored metric has stopped improving.
+    print("\n\n--------------FITTING--------------------------")
+    monitor = "val_accuracy"
     early_stopping = EarlyStopping(monitor=monitor, patience=20, verbose=1)
-    """train the model with model.fit()"""
-    callbacks = [tensorboard_callback, cp_callback, early_stopping]  # early_stopping
-    start = time.time()
-    
-    history_TL = model.fit(x=train_images, 
-                             y=train_masks_cat,
-                             batch_size=BATCH_SIZE,
-                             epochs=EPOCHS,
-                             verbose=2,
-                             validation_split=0.2,  # NB The validation data is selected from the last samples in the x and y data provided, before shuffling.
-                             callbacks=callbacks
-                             )
-    end = time.time()
-    print("Seconds occurred to fit the model: "+str(end-start))
+    callbacks = [tensorboard_callback, cp_callback, early_stopping]
+    # import segmentation_models as sm
+    # BACKBONE3 = 'vgg16'
+    # preprocess_input3 = sm.get_preprocessing(BACKBONE3)
 
-    #FINE TUNING
-    if (MODEL_NAME == "TRANSFER_LEARNING_VGG16" or MODEL_NAME == "TRANSFER_LEARNING_VGG19"):
-        # valutare se il fine tuning migliora il transfer learning base o no !!!!!!!!!!!!!!!!1
-        # FINE TUNING: Unfreeze the contracting path and retrain it (devo ancora implementare KFold Cross validation)
-        TL_checkpoint_path = model_dir+'/'+MODEL_NAME+'.hdf5'
-        TLmodel = load_model(TL_checkpoint_path, custom_objects={'recall_m': recall_m, 'precision_m': precision_m})  # 'weightedLoss': weightedLoss,
-        FTmodel = finetune_unfreezeall(IMAGE_SIZE, TLmodel)
-        # FTmodel = finetune_unfreezedeepestl(input_shape, TLmodel)
+    # # preprocess input
+    # X_train = preprocess_input3(train_images)
+    history_TL = model.fit(
+        x=train_images,
+        y=train_masks_cat,
+        batch_size=BATCH_SIZE,
+        epochs=EPOCHS,
+        verbose=2,
+        validation_split=0.2,
+        callbacks=callbacks,
+    )
 
-        # for the changes to the model to take affect we need to recompile
-        # the model, this time using optimizer with a *very* small learning rate
-        print("[INFO] re-compiling model...")
+    # FINE TUNING
+    if (
+        MODEL_NAME == "TRANSFER_LEARNING_VGG16"
+        or MODEL_NAME == "TRANSFER_LEARNING_VGG19"
+    ):
+        TL_checkpoint_path = model_dir + "/" + MODEL_NAME + ".hdf5"
+        TLmodel = load_model(TL_checkpoint_path, custom_objects={"mean_iou": mean_iou})
+        FTmodel = finetune_unfreezeall(TLmodel)
 
         # compile
-        """Config the model with losses and metrics with model.compile()"""
-        start = time.time()
-        optimizer = tf.keras.optimizers.Adam(learning_rate=1e-7, name="Adam")  # the model, this time using optimizer with a *very* small learning rate
+        optimizer = tf.keras.optimizers.Adam(learning_rate=1e-7, name="Adam")
         FTmodel.compile(
-            # lr=learning_rate: we want to change it gently (provare però a metterlo più alto)
-            optimizer=optimizer,
-            # !!! We use the "sparse" version of categorical_crossentropy because our target data is integers.
-            loss=loss,
-            loss_weights=class_weights,
-            metrics=metrics
+            optimizer=optimizer, loss=loss, loss_weights=class_weights, metrics=metrics
         )
-        end = time.time()
-        print("Seconds occurred to compile model: "+str(end-start))
 
-        # train the model again, this time fine-tuning *both* the final set
-        # of CONV layers along with our set of FC layers
-        """train the model with model.fit()"""
-        start = time.time()
         history_FT = FTmodel.fit(
             x=train_images,
-            y=train_masks,
+            y=train_masks_cat,
             batch_size=BATCH_SIZE,
             epochs=EPOCHS,
             verbose=2,
-            validation_split=0.2,  # NB The validation data is selected from the last samples in the x and y data provided, before shuffling.
-            callbacks=callbacks
+            validation_split=0.2,
+            callbacks=callbacks,
         )
-        end = time.time()
-        print("Seconds occurred to fit the model: "+str(end-start))
-        
-    #save keras.callbacks.History  into json
-    import json
+
+    #TODO: concatenare le due history
+    # save keras.callbacks.History  into json
     # Get the dictionary containing each metric and the loss for each epoch
     history_dict = history_TL.history
+    for label in range(0, NUM_CLASSES):
+        history_TL.history['f1score'+label]=my_f1score_label(history_dict, label)
+    print(history_TL.history)
+    exit()
     # Save it under the form of a json file
-    json.dump(history_dict, open(model_dir+'/history.json', 'w'))
-    
-def load_model(weights_path):
+    json.dump(history_dict, open(model_dir + "/history.json", "w"))
+
+    # save model
+    model.save(model_dir + "/vgg19_backbone_50epochs.hdf5")
+
+
+def load_model_with_weights(weights_path):
     # Create model with weights from hdf5 file
     print(weights_path)
     model.load_weights(weights_path)
