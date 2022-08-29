@@ -1,8 +1,5 @@
-
 # Function for fine-tuning the model (unfreeze all layers) 
-def finetune_unfreezeall(input_shape, base_model):
-    input_shape = input_shape
-    base_model = base_model
+def finetune_unfreezeall( base_model):
     
     # unfreeze the contracting path and freeze the expanding path
     for layer in base_model.layers:
@@ -16,9 +13,7 @@ def finetune_unfreezeall(input_shape, base_model):
     return base_model    
 
 # Function for fine-tuning the model (unfreeze deepest layers) 
-def finetune_unfreezedeepest(input_shape, base_model):
-    input_shape = input_shape
-    base_model = base_model
+def finetune_unfreezedeepest( base_model):
     
     # unfreeze the contracting path and freeze the expanding path
     for layer in base_model.layers:
