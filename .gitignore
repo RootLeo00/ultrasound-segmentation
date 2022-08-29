@@ -3,3 +3,4 @@ utils/__pycache__/*
 __pycache__/*
 logs/fit/*
 utils/metrics/__pycache__/*
+.vscode/*
