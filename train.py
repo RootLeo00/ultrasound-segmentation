@@ -14,9 +14,8 @@ from tensorflow.keras.utils import to_categorical
 from params import BATCH_SIZE, EPOCHS, IMAGE_SIZE, MODEL_NAME, NUM_CLASSES, model_dir
 from utils.fine_tuning import finetune_unfreezeall
 from utils.load_dataset import get_train_dataset
-from utils.metrics.f1_score import custom_f1_macro, f1score, f1score_sm, my_f1score_label
+from utils.metrics.f1_score import f1score_per_label, val_f1score_per_label
 from utils.metrics.iou import mean_iou
-import tensorflow_addons as tfa
 from sklearn.utils import compute_class_weight
 from tensorflow.keras.models import load_model
 
@@ -34,7 +33,7 @@ model = get_model(image_size=IMAGE_SIZE, num_classes=NUM_CLASSES)
 
 def train():
     keras.backend.clear_session()
-
+    
     (train_images, train_masks) = get_train_dataset()
     # print("Class values in the dataset are ... ", np.unique(train_masks))  # 0 is the background/few unlabeled
 
@@ -43,12 +42,8 @@ def train():
     train_masks_cat = train_masks_cat.reshape(
         (train_masks.shape[0], train_masks.shape[1], train_masks.shape[2], NUM_CLASSES)
     )
-    # test_masks_cat = to_categorical(y_test, num_classes=n_classes)
-    # y_test_cat = test_masks_cat.reshape((y_test.shape[0], y_test.shape[1], y_test.shape[2], n_classes))
 
     # IMBALANCED CLASSIFICATION - CLASS WEIGHTS
-    # class_weights = [np.ceil((100-percentages[0])/10), np.ceil((100-percentages[1])/10), np.ceil((100-percentages[2])/10)]
-
     class_weights = compute_class_weight(
         "balanced",
         classes=np.unique(train_masks.flatten()),
@@ -59,9 +54,8 @@ def train():
     # uniques, counts = np.unique(train_masks[0].flatten(), return_counts=True)
     # percentages = dict(zip(uniques, counts * 100 /
     #                    len(train_masks[0].flatten())))
-    # print(percentages)
     # class_weights = {0: np.ceil((100-percentages[0])/10), 1: np.ceil((100-percentages[1])/10), 2: np.ceil((100-percentages[2])/10) }
-    # print(class_weights)
+
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4, name="Adam")
     loss = "categorical_crossentropy"
     # TODO: ciclo for per le metriche
@@ -152,15 +146,18 @@ def train():
             callbacks=callbacks,
         )
 
-    #TODO: concatenare le due history
-    # save keras.callbacks.History  into json
+    # TODO: concatenare le due history
+    # POST TRAINING ANALISYS - F1 SCORE ANALISYS
     # Get the dictionary containing each metric and the loss for each epoch
     history_dict = history_TL.history
     for label in range(0, NUM_CLASSES):
-        history_TL.history['f1score'+label]=my_f1score_label(history_dict, label)
-    print(history_TL.history)
-    exit()
-    # Save it under the form of a json file
+        history_TL.history["f1score" + str(label)] = f1score_per_label(
+            history_dict, label
+        )
+        history_TL.history["val_f1score" + str(label)] = val_f1score_per_label(
+            history_dict, label
+        )
+    # save keras.callbacks.History  into json
     json.dump(history_dict, open(model_dir + "/history.json", "w"))
 
     # save model
