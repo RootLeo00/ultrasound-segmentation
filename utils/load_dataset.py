@@ -8,8 +8,18 @@ from params import IMAGE_SIZE, train_dir, test_dir
 
 
 def get_path_arrays(dir_path, type):
+    #TODO: check 'type' input
+    """
+    Returns a sorted list of paths file names (fnames) in a given directory (dir paths). 
+    If the type is the string 'mask' or 'type', only the filenames that include that string are returned.
+    
+    Args:
+        dir_path: absolute directory path
+        type: string chosen between 'input' or 'mask'
+    Returns:
+        a sorted list of string paths
+    """
     if type == "input":
-        """Returns a list of path arrays of input images"""
         return sorted(
             [
                 os.path.join(dir_path, fname)
@@ -20,7 +30,6 @@ def get_path_arrays(dir_path, type):
             ]
         )
     if type == "mask":
-        """Returns a list of path arrays of mask images"""
         return sorted(
             [
                 os.path.join(dir_path, fname)
@@ -62,8 +71,7 @@ def get_train_dataset():
     # print("Number of input samples:", len(train_input_img_paths))
     # print("Number of mask samples:", len(train_mask_img_paths))
 
-    return load_data(IMAGE_SIZE, train_input_img_paths, train_mask_img_paths)
-    # (images,masks)= load_data_cv2(IMAGE_SIZE, train_input_img_paths, train_mask_img_paths)
+    (images,masks)= load_data_cv2(IMAGE_SIZE, train_input_img_paths, train_mask_img_paths)
     ###############################################
     # Encode labels... but multi dim array so need to flatten, encode and reshape
     # from sklearn.preprocessing import LabelEncoder
@@ -97,12 +105,11 @@ def get_test_dataset():
     # print("Number of input samples:", len(test_input_img_paths))
     # print("Number of mask samples:", len(test_mask_img_paths))
 
-    return load_data(IMAGE_SIZE, test_input_img_paths, test_mask_img_paths)
     (images, masks) = load_data_cv2(
         IMAGE_SIZE, test_input_img_paths, test_mask_img_paths
     )
     ###############################################
-    # # Encode labels... but multi dim array so need to flatten, encode and reshape
+    # Encode labels... but multi dim array so need to flatten, encode and reshape
     # from sklearn.preprocessing import LabelEncoder
     # labelencoder = LabelEncoder()
     # n, h, w = masks.shape
