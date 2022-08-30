@@ -1,95 +1,50 @@
+"""
+    It is important to remember that in multi-class classification, we calculate the F1 score for each class in a One-vs-Rest (OvR) approach
+    instead of a single overall F1 score, as seen in binary classification.
+"""
 
-# TODO: calculate f1 score (precision and recall) for multiclass segmentation
-# source: https://github.com/scikit-learn/scikit-learn/blob/36958fb24/sklearn/metrics/_classification.py#L1001
 
-# doc: https://www.baeldung.com/cs/multi-class-f1-score
-from sklearn.metrics import f1_score
-import numpy as np
-import tensorflow as tf
-from keras import backend as K
-import segmentation_models as sm
+def f1score_per_label(history, label):
+    # get precision and recall from history
+    precision = history["precision" + str(label)]
+    recall = history["recall" + str(label)]
+    _f1score = []
+    for (p, r) in zip(precision, recall):
+        _f1score.append(2 * ((p * r) / (p + r)))
 
-def f1score(y_true, y_pred):
-    """
-    Return the F1_score of each label.
+    return _f1score
+
+def val_f1score_per_label(history, label):
+    # get precision and recall from history
+    val_precision = history["val_precision" + str(label)]
+    val_recall = history["val_recall" + str(label)]
+    val_f1score = []
+    for (p, r) in zip(val_precision, val_recall):
+        val_f1score.append(2 * ((p * r) / (p + r)))
+
+    return val_f1score
+
+
+def f1score_weighted_average(history, class_weights):
+    """The weighted-averaged F1 score is calculated by taking the mean of all per-class F1 scores while considering each class's support.
+        F1_weighted= sum_from_0_to_n [(F1_i * W_i)]
+
     Args:
-        y_true: 1d array-like, or label indicator array / sparse matrix --> Ground truth (correct) target values
-        y_pred: 1d array-like, or label indicator array / sparse matrix --> Estimated targets as returned by a classifier.
-        label: array-like, default=None --> the label to return the IoU for
-        average{'micro', 'macro', 'samples', 'weighted', 'binary'} or None, default='binary' 
-
-                'binary':
-
-                    Only report results for the class specified by pos_label. This is applicable only if targets (y_{true,pred}) are binary.
-                'micro':
-
-                    Calculate metrics globally by counting the total true positives, false negatives and false positives.
-                'macro':
-
-                    Calculate metrics for each label, and find their unweighted mean. This does not take label imbalance into account.
-                'weighted':
-
-                    Calculate metrics for each label, and find their average weighted by support (the number of true instances for each label). This alters ‘macro’ to account for label imbalance; it can result in an F-score that is not between precision and recall.
-                'samples':
-
-                    Calculate metrics for each instance, and find their average (only meaningful for multilabel classification where this differs from accuracy_score).
+        history (_type_): _description_
+        class_weights (_type_): proportion of each class's support relative to the sum of all support values.
+                                where 'support' refers to the number of actual occurrences of the class in the dataset.
 
     Returns:
-        the F1_score of each label
+        _type_: _description_
+
+    Source: https://towardsdatascience.com/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f
     """
-    f1_score(y_true,
-             y_pred, 
-             labels=[0,1,2], #TODO:migliorare
-             average=None,
-             )
-    
-#https://neptune.ai/blog/implementing-the-macro-f1-score-in-keras
-### Define F1 measures: F1 = 2 * (precision * recall) / (precision + recall)
-#Calculate metrics for each label, and find their unweighted mean. This does not take label imbalance into account.
-def custom_f1_macro(y_true, y_pred):    
-    def recall_m(y_true, y_pred):
-        TP = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-        Positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-        
-        recall = TP / (Positives+K.epsilon())    
-        return recall 
-    
-    
-    def precision_m(y_true, y_pred):
-        TP = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-        Pred_Positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-    
-        precision = TP / (Pred_Positives+K.epsilon())
-        return precision 
-    
-    precision, recall = precision_m(y_true, y_pred), recall_m(y_true, y_pred)
-    
-    return 2*((precision*recall)/(precision+recall+K.epsilon()))
-    
-    
-def f1score_sm():
-    sm.metrics.FScore(threshold=0.5)
-    
-def my_f1score_label(history, label):
-    #get precision and recall from history
-    precision=history['precision'+label]
-    recall=history['recall'+label]
-    _f1score=[]
-    for (p,r) in (precision, recall):
-        _f1score.append(2*((p*r)/(p+r)))
+    # get number of classes
+    num_classes = class_weights.lenght
+    f1score_weighted = 0.0
+    # get f1 score per label
+    for i in range(0, num_classes):
+        f1score = history["f1score" + str(i)] * class_weights[i]
+        f1score_weighted += f1score
 
-    return _f1score
-
-def my_f1score_label(history, label):
-    #get precision and recall from history
-    precision=history['precision'+str(label)]
-    print(precision)
-    recall=history['recall'+str(label)]
-    print(recall)
-    exit()
-    _f1score={}
-    for (p,r) in (precision, recall):
-        _f1score['f1score'+str(label)].append(2*((p*r)/(p+r)))
-
-    return _f1score
-
+    return f1score_weighted
