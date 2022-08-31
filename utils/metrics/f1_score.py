@@ -2,11 +2,11 @@
     It is important to remember that in multi-class classification, we calculate the F1 score for each class in a One-vs-Rest (OvR) approach
     instead of a single overall F1 score, as seen in binary classification.
 """
-def check_division_by_zero(p,r):
-    if((p+r)==0):
-        return true
-    else: 
-        return false
+def check_division_by_zero(p, r):
+    if ((p+r) == 0):
+        return True
+    else:
+        return False
 
 
 def f1score_per_label(history, label):
@@ -15,12 +15,13 @@ def f1score_per_label(history, label):
     recall = history["recall" + str(label)]
     _f1score = []
     for (p, r) in zip(precision, recall):
-        div_by_zero=check_division_by_zero(p,r)
-        if(div_by_zero):
+        div_by_zero = check_division_by_zero(p, r)
+        if (div_by_zero):
             _f1score.append(0)
         else:
             _f1score.append(2 * ((p * r) / (p + r)))
     return _f1score
+
 
 def val_f1score_per_label(history, label):
     # get precision and recall from history
@@ -28,8 +29,8 @@ def val_f1score_per_label(history, label):
     val_recall = history["val_recall" + str(label)]
     val_f1score = []
     for (p, r) in zip(val_precision, val_recall):
-        div_by_zero=check_division_by_zero(p,r)
-        if(div_by_zero):
+        div_by_zero = check_division_by_zero(p, r)
+        if (div_by_zero):
             val_f1score.append(0)
         else:
             val_f1score.append(2 * ((p * r) / (p + r)))
@@ -54,7 +55,7 @@ def f1score_weighted_average(history, class_weights):
     # get number of classes
     num_classes = len(class_weights)
     f1score_weighted = 0.0
-    val_f1score_weighted=0.0
+    val_f1score_weighted = 0.0
     # get f1 score per label
     for i in range(0, num_classes):
         print(history["f1score" + str(i)])

@@ -1,28 +1,9 @@
-import os
-from tabnanny import verbose
 import tensorflow as tf
-# from IPython.display import Image, display
-from tensorflow.keras.preprocessing.image import load_img
-import PIL
-from PIL import ImageOps
-from PIL import Image as im
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 from tensorflow import keras
-import numpy as np
-from tensorflow.keras import layers
-import tensorflow as tf
-import random
-import time
-import sys
-from tensorflow.keras import backend as K
-
-from tensorflow.keras.applications.vgg19 import VGG19, preprocess_input
-from tensorflow.keras.models import Sequential, Model, load_model
-from tensorflow.keras.layers import Dense, Flatten, Input, Activation, BatchNormalization, Dropout, Lambda, Conv2D, Conv2DTranspose, MaxPooling2D, concatenate, LeakyReLU, Concatenate
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, CSVLogger
-from tensorflow.keras.optimizers import Adam
-
+from tensorflow.keras.applications.vgg19 import VGG19
+from tensorflow.keras.layers import (Activation, BatchNormalization,
+                                     Concatenate, Conv2D, Conv2DTranspose)
+from tensorflow.keras.models import Model
 
 #DEFINE THE MODEL
 

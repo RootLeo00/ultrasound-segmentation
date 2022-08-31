@@ -1,6 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
 
 # GRAPHS
 def graph(history, title, xlabel, ylabel, history_name, history_val_name, save_path):

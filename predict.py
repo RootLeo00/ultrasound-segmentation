@@ -7,15 +7,13 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import load_img
 
-from params import NUM_CLASSES, base_dir, model_dir, pred_dir
+from params import NUM_CLASSES, model_dir, pred_dir
 from train import model
 from utils.load_dataset import (
     get_test_dataset,
-    get_train_dataset,
     test_input_img_paths,
     test_mask_img_paths,
 )
-from utils.metrics.graph import graph
 
 
 # PREDICTION
@@ -34,7 +32,7 @@ def predict_func():
         plt.subplot(3, 1, 1)
         test_image = load_img(test_input_img_paths[i])
         plt.imshow(test_image)
-
+        
         plt.subplot(3, 1, 2)
         # consider the most probable class for each predicted pixel (model returns the probability of every class per pixel)
         predicted_mask = np.argmax(predictions[i], axis=-1)
@@ -48,7 +46,7 @@ def predict_func():
         plt.imshow(predicted_mask)
 
         plt.subplot(3, 1, 3)
-        plt.imshow(mpimg.imread(test_mask_img_paths[i]))
+        plt.imshow(mpimg.imread(fname=test_mask_img_paths[i]))
         plt.savefig(pred_dir + "/prediction_" + str(i) + ".png")
         # plt.show()
 
@@ -56,7 +54,7 @@ def predict_func():
         display_mask(i, mask_predictions)
 
 
-##EVALUATE PREDICTIONS #####################################################################
+    ##EVALUATE PREDICTIONS #####################################################################
     history_dict = json.load(open(model_dir + "/history.json", "r"))
     # Mean IOU graph
     # graph(history_dict,
@@ -86,8 +84,8 @@ def predict_func():
     #         save_path=pred_dir + "/f1_score_"+str(label)+"_graph.png",
     #     )
 
-    #CLASSIFICATION REPORT###############################################################
-    from sklearn.metrics import multilabel_confusion_matrix, classification_report
+    ##CLASSIFICATION REPORT###############################################################
+    from sklearn.metrics import classification_report
     target_names = [('class '+str(i)) for i in range(0,NUM_CLASSES)] #TODO: mettere nomi alle classi
     y_true=test_masks
     y_pred=np.argmax(mask_predictions, axis=-1)

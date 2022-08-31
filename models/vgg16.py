@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow import keras
-import tensorflow as tf
 from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, concatenate
@@ -17,11 +16,11 @@ def get_model(input_shape, num_classes):
                    input_tensor=preprocess_input,
                    input_shape = input_shape
                    )
-
+    
     #freezing all layers in VGG16 (they already have imagenet weights)
     for layer in base_VGG.layers: 
         layer.trainable = False
-
+    
     # Create new Decoder on top
     # Bridge (exclude the last maxpooling layer in VGG16) 
     bridge = base_VGG.get_layer("block5_conv3").output
@@ -51,5 +50,5 @@ def get_model(input_shape, num_classes):
 
 
     model_ = Model(inputs=base_VGG.inputs, outputs=[conv10], name="VGG16_U-Net") #you can specify inputs as "base_VGG.inputs" as well as "inputs"
-
+    
     return model_

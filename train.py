@@ -1,28 +1,27 @@
 import datetime
 import json
 
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+from sklearn.utils import compute_class_weight
 from tensorflow import keras
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import to_categorical
 
-from params import BATCH_SIZE, EPOCHS, IMAGE_SIZE, MODEL_NAME, NUM_CLASSES, model_dir
+from params import (BATCH_SIZE, EPOCHS, IMAGE_SIZE, MODEL_NAME, NUM_CLASSES,
+                    model_dir)
 from utils.fine_tuning import finetune_unfreezeall
 from utils.load_dataset import get_train_dataset
 from utils.metrics.f1_score import f1score_per_label, val_f1score_per_label
 from utils.metrics.iou import mean_iou
-from sklearn.utils import compute_class_weight
-from tensorflow.keras.models import load_model
 
 # TODO: inizializzare meglio
 if MODEL_NAME == "UNET":
     from models.unet import get_model
 elif MODEL_NAME == "TRANSFER_LEARNING_VGG16":
     from models.vgg16 import get_model
+
     # get_model_sm(num_classes=NUM_CLASSES)
 elif MODEL_NAME == "TRANSFER_LEARNING_VGG19":
     from models.vgg19 import get_model
@@ -116,7 +115,8 @@ def train():
         validation_split=0.2,
         callbacks=callbacks,
     )
-
+    history_dict=history_TL.history
+    
     # FINE TUNING
     if (
         MODEL_NAME == "TRANSFER_LEARNING_VGG16"
@@ -141,17 +141,14 @@ def train():
             validation_split=0.2,
             callbacks=callbacks,
         )
+            #concatenate transfer learning history with fine tuning history (parameters should be the same)
+        
+        for keyTL,keyFT in zip(history_TL.history, history_FT.history):
+            if(keyTL==keyFT):
+                # history_dict[keyTL].append(history_TL.history[keyTL])
+                [ history_dict[keyTL].append(elem) for elem in history_FT.history[keyFT]]
 
-    # TODO: concatenare le due history
     # POST TRAINING ANALISYS - F1 SCORE METRIC
-    
-    #concatenate transfer learning history with fine tuning history (parameters should be the same)
-    history_dict=history_TL.history
-    for keyTL,keyFT in zip(history_TL.history, history_FT.history):
-        if(keyTL==keyFT):
-            # history_dict[keyTL].append(history_TL.history[keyTL])
-           [ history_dict[keyTL].append(elem) for elem in history_FT.history[keyFT]]
-
     for label in range(0, NUM_CLASSES):
         history_TL.history["f1score" + str(label)] = f1score_per_label(
             history_dict, label

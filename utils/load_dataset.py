@@ -2,9 +2,8 @@ import os
 from tensorflow.keras.preprocessing.image import load_img
 import numpy as np
 import cv2
-import tensorflow as tf
 
-from params import BATCH_SIZE, IMAGE_SIZE, train_dir, test_dir, SIZE_X, SIZE_Y
+from params import IMAGE_SIZE, train_dir, test_dir, SIZE_X, SIZE_Y
 
 
 def get_path_arrays(dir_path, type):
