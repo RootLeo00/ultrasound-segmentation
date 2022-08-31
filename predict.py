@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 import os
 
@@ -7,16 +6,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import load_img
-from tensorflow.keras.utils import to_categorical
 
 from params import NUM_CLASSES, base_dir, model_dir, pred_dir
 from train import model
 from utils.load_dataset import (
     get_test_dataset,
+    get_train_dataset,
     test_input_img_paths,
     test_mask_img_paths,
 )
-from utils.metrics.graph import graph, graph_confusion_matrix
+from utils.metrics.graph import graph
 
 
 # PREDICTION
@@ -25,11 +24,11 @@ def predict_func():
     os.mkdir(pred_dir)
     (test_images, test_masks) = get_test_dataset()
     print("\n\n--------------PREDICT--------------------------")
-    # Generate predictions for all images in the validation set
-    # (val_images, val_mask) = load_data(BATCH_SIZE, IMAGE_SIZE, val_input_img_paths, val_mask_img_paths)
-    # Display results for prediction
+    
+    # Generate predictions for all images in the test set
     mask_predictions = model.predict(test_images, verbose=2)
 
+    # Display results for prediction
     def display_mask(i, predictions):
         """Quick utility to display a model's prediction."""
         plt.subplot(3, 1, 1)
@@ -37,16 +36,14 @@ def predict_func():
         plt.imshow(test_image)
 
         plt.subplot(3, 1, 2)
-        # Returns the indices of the maximum values along an axis (nel mio caso, l'ultimo).
+        # consider the most probable class for each predicted pixel (model returns the probability of every class per pixel)
         predicted_mask = np.argmax(predictions[i], axis=-1)
         predicted_mask = np.expand_dims(predicted_mask, axis=-1)
-        # va moltiplicato per 255 perchè print(predicted_mask.tolist()) torna array con solo valori 0 e 1
+        # convert to rgb
         predicted_mask = predicted_mask * 255
         w, h = test_image.size
-        # print("height:"+str(h))
-        # print("width:"+str(w))
+        # resize to original shape
         predicted_mask = tf.image.resize(predicted_mask, [h, w])
-        # devo moltiplicare si o no per 255???? --> prova a st
         predicted_mask = tf.keras.preprocessing.image.array_to_img(predicted_mask)
         plt.imshow(predicted_mask)
 
@@ -55,7 +52,6 @@ def predict_func():
         plt.savefig(pred_dir + "/prediction_" + str(i) + ".png")
         # plt.show()
 
-    # history_iou=[0 for i in range(0, 3)] #TODO inizializza meglio
     for i in range(3):
         display_mask(i, mask_predictions)
 
@@ -78,7 +74,7 @@ def predict_func():
     #       history_name='accuracy',
     #       history_val_name='val_accuracy',
     #       save_path=pred_dir+'/accuracy_graph.png')
-    # F1 Score graph per label
+    # # F1 Score graph per label
     # for label in range(0, NUM_CLASSES):
     #     graph(
     #         history_dict,
@@ -101,5 +97,37 @@ def predict_func():
     #                    len(train_masks[0].flatten())))
     # print('*********************+')
     # print(percentages)
-    # exit()
     # f1score_weighted_average(history_dict, percentages)
+
+
+    #ROC CURVE########################################à
+
+    from sklearn.metrics import roc_curve, auc
+    from sklearn.preprocessing import label_binarize
+    from sklearn.multiclass import OneVsRestClassifier
+    from sklearn.model_selection import train_test_split
+
+    # Import some data to play with
+    train_images, train_masks = get_train_dataset()
+    X_train = train_images
+    y_train = train_masks
+    # y_train = np.expand_dims(y_train, axis=3) #May not be necessary.. leftover from previous code 
+
+    # print(y_train)
+    # print((y_train.shape))
+    # Binarize the output
+    y = label_binarize(y_train, classes=[0, 1, 2])
+    n_classes = y_train.shape[1]
+    print(n_classes)
+
+    # Learn to predict each class against the other
+    classifier = OneVsRestClassifier(model)
+    y_score = classifier.fit(X_train, y).decision_function(X_train)
+
+    # Compute ROC curve and ROC area for each class
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    for i in range(NUM_CLASSES):
+        fpr[i], tpr[i], _ = roc_curve(y[:, i], y_score[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
