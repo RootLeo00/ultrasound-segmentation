@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import datetime
 import json
 
@@ -24,11 +23,11 @@ if MODEL_NAME == "UNET":
     from models.unet import get_model
 elif MODEL_NAME == "TRANSFER_LEARNING_VGG16":
     from models.vgg16 import get_model
-
     # get_model_sm(num_classes=NUM_CLASSES)
 elif MODEL_NAME == "TRANSFER_LEARNING_VGG19":
     from models.vgg19 import get_model
-model = get_model(image_size=IMAGE_SIZE, num_classes=NUM_CLASSES)
+input_shape=IMAGE_SIZE + (3,)
+model = get_model(input_shape=input_shape, num_classes=NUM_CLASSES)
 
 
 def train():
@@ -49,7 +48,8 @@ def train():
         classes=np.unique(train_masks.flatten()),
         y=np.ravel(train_masks, order="C"),
     )
-    # """My calculate class weights with percentage of pixels"""
+
+    # """My calculated class weights with percentage of pixels"""
     # # calculate weigths of weightedLoss (mi baso sulla priam immagine)
     # uniques, counts = np.unique(train_masks[0].flatten(), return_counts=True)
     # percentages = dict(zip(uniques, counts * 100 /
@@ -88,12 +88,14 @@ def train():
     ]
 
     model.compile(
-        optimizer=optimizer, loss=loss, loss_weights=class_weights, metrics=metrics
+        optimizer=optimizer, loss=loss,  metrics=metrics, loss_weights=class_weights,
     )
 
     checkpoint_path = model_dir + "/" + MODEL_NAME + ".hdf5"
+    monitor = "val_mean_iou"
+    mode="max"
     cp_callback = ModelCheckpoint(
-        checkpoint_path, verbose=1, monitor="val_accuracy", save_best_only=True
+        filepath=checkpoint_path, verbose=1, monitor=monitor, mode=mode, save_best_only=True
     )
 
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -102,15 +104,9 @@ def train():
     )
 
     print("\n\n--------------FITTING--------------------------")
-    monitor = "val_accuracy"
-    early_stopping = EarlyStopping(monitor=monitor, patience=20, verbose=1)
+    early_stopping = EarlyStopping(monitor=monitor, mode=mode,patience=20, verbose=1)
     callbacks = [tensorboard_callback, cp_callback, early_stopping]
-    # import segmentation_models as sm
-    # BACKBONE3 = 'vgg16'
-    # preprocess_input3 = sm.get_preprocessing(BACKBONE3)
 
-    # # preprocess input
-    # X_train = preprocess_input3(train_images)
     history_TL = model.fit(
         x=train_images,
         y=train_masks_cat,
@@ -130,7 +126,7 @@ def train():
         TLmodel = load_model(TL_checkpoint_path, custom_objects={"mean_iou": mean_iou})
         FTmodel = finetune_unfreezeall(TLmodel)
 
-        # compile
+        # re-compile
         optimizer = tf.keras.optimizers.Adam(learning_rate=1e-7, name="Adam")
         FTmodel.compile(
             optimizer=optimizer, loss=loss, loss_weights=class_weights, metrics=metrics
@@ -147,9 +143,15 @@ def train():
         )
 
     # TODO: concatenare le due history
-    # POST TRAINING ANALISYS - F1 SCORE ANALISYS
-    # Get the dictionary containing each metric and the loss for each epoch
-    history_dict = history_TL.history
+    # POST TRAINING ANALISYS - F1 SCORE METRIC
+    
+    #concatenate transfer learning history with fine tuning history (parameters should be the same)
+    history_dict=history_TL.history
+    for keyTL,keyFT in zip(history_TL.history, history_FT.history):
+        if(keyTL==keyFT):
+            # history_dict[keyTL].append(history_TL.history[keyTL])
+           [ history_dict[keyTL].append(elem) for elem in history_FT.history[keyFT]]
+
     for label in range(0, NUM_CLASSES):
         history_TL.history["f1score" + str(label)] = f1score_per_label(
             history_dict, label
@@ -157,13 +159,15 @@ def train():
         history_TL.history["val_f1score" + str(label)] = val_f1score_per_label(
             history_dict, label
         )
-    # save keras.callbacks.History  into json
+    
+    # save keras.callbacks.History into json
     json.dump(history_dict, open(model_dir + "/history.json", "w"))
 
     # save model
-    model.save(model_dir + "/vgg19_backbone_50epochs.hdf5")
+    model.save(model_dir + "/" + MODEL_NAME + ".hdf5")
 
 
+#FOR "ONLY PREDICTIONS" PROGRAM
 def load_model_with_weights(weights_path):
     # Create model with weights from hdf5 file
     print(weights_path)
