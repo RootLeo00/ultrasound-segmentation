@@ -69,8 +69,8 @@ def get_train_dataset():
 
     (images,masks)= load_data_cv2(IMAGE_SIZE, train_input_img_paths, train_mask_img_paths)
 
-    masks_input = np.expand_dims(masks, axis=3)
-    return images, masks_input
+    # masks_input = np.expand_dims(masks, axis=3)
+    return images, masks
 
 
 def get_test_dataset():
@@ -82,8 +82,8 @@ def get_test_dataset():
     (images, masks) = load_data_cv2(
         IMAGE_SIZE, test_input_img_paths, test_mask_img_paths
     )
-    masks_input = np.expand_dims(masks, axis=3)
-    return images, masks_input
+    # masks_input = np.expand_dims(masks, axis=3)
+    return images, masks
 
 # TODO: inizializzare meglio test_input_img_paths e test_mask_img_paths
 test_input_img_paths = get_path_arrays(test_dir, "input")
@@ -109,7 +109,7 @@ def load_data_cv2(IMAGE_SIZE, input_img_paths, mask_img_paths):
     for mask_path in mask_img_paths:
         mask = cv2.imread(mask_path, 0)
         mask = cv2.resize(
-            mask, (SIZE_Y, SIZE_X), #interpolation=cv2.INTER_NEAREST
+            mask, (SIZE_Y, SIZE_X), interpolation=cv2.INTER_NEAREST
         )  # Otherwise ground truth changes due to interpolation
         masks.append(mask)
 
