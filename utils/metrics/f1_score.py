@@ -40,11 +40,16 @@ def f1score_weighted_average(history, class_weights):
     Source: https://towardsdatascience.com/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f
     """
     # get number of classes
-    num_classes = class_weights.lenght
+    num_classes = len(class_weights)
     f1score_weighted = 0.0
+    val_f1score_weighted=0.0
     # get f1 score per label
     for i in range(0, num_classes):
+        print(history["f1score" + str(i)])
+        print(class_weights[i])
         f1score = history["f1score" + str(i)] * class_weights[i]
         f1score_weighted += f1score
+        val_f1score = history["val_f1score" + str(i)] * class_weights[i]
+        val_f1score_weighted += val_f1score
 
-    return f1score_weighted
+    return f1score_weighted, val_f1score_weighted
