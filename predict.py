@@ -59,55 +59,39 @@ def predict_func():
 ##EVALUATE PREDICTIONS #####################################################################
     history_dict = json.load(open(model_dir + "/history.json", "r"))
     # Mean IOU graph
-    graph(history_dict,
-          title='Mean IoU Graph',
-          xlabel='Epochs',
-          ylabel='Mean IoU',
-          history_name='mean_iou',
-          history_val_name='val_mean_iou',
-          save_path=pred_dir+'/mean_iou_graph.png')
-    # Accuracy graph
-    graph(history_dict,
-          title='Accuracy Graph',
-          xlabel='Epochs',
-          ylabel='Accuracy',
-          history_name='accuracy',
-          history_val_name='val_accuracy',
-          save_path=pred_dir+'/accuracy_graph.png')
-    # F1 Score graph per label
-    for label in range(0, NUM_CLASSES):
-        graph(
-            history_dict,
-            title="F1 Score Graph For Label "+str(label),
-            xlabel="Epochs",
-            ylabel="F1 Score",
-            history_name="f1score"+str(label),
-            history_val_name="val_f1score"+str(label),
-            save_path=pred_dir + "/f1_score_"+str(label)+"_graph.png",
-        )
+    # graph(history_dict,
+    #       title='Mean IoU Graph',
+    #       xlabel='Epochs',
+    #       ylabel='Mean IoU',
+    #       history_name='mean_iou',
+    #       history_val_name='val_mean_iou',
+    #       save_path=pred_dir+'/mean_iou_graph.png')
+    # # Accuracy graph
+    # graph(history_dict,
+    #       title='Accuracy Graph',
+    #       xlabel='Epochs',
+    #       ylabel='Accuracy',
+    #       history_name='accuracy',
+    #       history_val_name='val_accuracy',
+    #       save_path=pred_dir+'/accuracy_graph.png')
+    # # F1 Score graph per label
+    # for label in range(0, NUM_CLASSES):
+    #     graph(
+    #         history_dict,
+    #         title="F1 Score Graph For Label "+str(label),
+    #         xlabel="Epochs",
+    #         ylabel="F1 Score",
+    #         history_name="f1score"+str(label),
+    #         history_val_name="val_f1score"+str(label),
+    #         save_path=pred_dir + "/f1_score_"+str(label)+"_graph.png",
+    #     )
 
-    
-    ##WEIGHTED AVERAGE F1 SCORE################################################################
-
-
-    #TODO: precision and recall for predictions
-    #TODO: f1 for predictions
-    #TODO: f1 average for predictions
-    from utils.metrics.f1_score import f1score_weighted_average
-    from tensorflow.keras.utils import to_categorical
-    from sklearn.utils import compute_class_weight
-        # minuto 20 di https://www.youtube.com/watch?v=F365vQ8EndQ
-    test_masks_cat = to_categorical(test_masks, num_classes=NUM_CLASSES)
-    test_masks_cat = test_masks_cat.reshape(
-        (test_masks.shape[0], test_masks.shape[1], test_masks.shape[2], NUM_CLASSES)
-    )
-
-    # IMBALANCED CLASSIFICATION - CLASS WEIGHTS
-    class_weights = compute_class_weight(
-        "balanced",
-        classes=np.unique(test_masks.flatten()),
-        y=np.ravel(test_masks, order="C"),
-    )
-    f1score_weighted_average(history_dict, class_weights=class_weights)
+    #CLASSIFICATION REPORT###############################################################
+    from sklearn.metrics import multilabel_confusion_matrix, classification_report
+    target_names = [('class '+str(i)) for i in range(0,NUM_CLASSES)] #TODO: mettere nomi alle classi
+    y_true=test_masks
+    y_pred=np.argmax(mask_predictions, axis=-1)
+    # print(multilabel_confusion_matrix(y_true.flatten('C'),y_pred.flatten('C'), labels=[0,1,2])) #TODO: array labels più carino
+    print(classification_report(y_true.flatten('C'),y_pred.flatten('C')))
 
 
