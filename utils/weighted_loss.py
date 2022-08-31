@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import tensorflow as tf
 # from IPython.display import Image, display
 import tensorflow as tf

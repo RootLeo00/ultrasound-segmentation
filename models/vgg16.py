@@ -6,31 +6,27 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, concatenate
 
 #DEFINE THE MODEL
-def get_model(image_size, num_classes):
-    # input: input_shape (height, width, channels) 
-    # return model
-    input_shape=image_size + (3,)   
+def get_model(input_shape, num_classes):
 
     #layer di preprocessing input
     inputs = keras.Input(shape=input_shape)
     preprocess_input = tf.keras.applications.vgg16.preprocess_input(inputs)
-
     base_VGG = VGG16(
-                    include_top = False, #tolgo i classifier/fully connecred layers (no dense and output layers)
+                    include_top = False, 
                    weights = "imagenet", # Load weights pre-trained on ImageNet.
                    input_tensor=preprocess_input,
                    input_shape = input_shape
                    )
 
-    # freezing all layers in VGG16 (non serve trainarle perchè tanto carico i pesi )
+    #freezing all layers in VGG16 (they already have imagenet weights)
     for layer in base_VGG.layers: 
         layer.trainable = False
 
-# Create new model on top
-    # the bridge (exclude the last maxpooling layer in VGG16) 
+    # Create new Decoder on top
+    # Bridge (exclude the last maxpooling layer in VGG16) 
     bridge = base_VGG.get_layer("block5_conv3").output
 
-    # Decoder now
+    # Decoder
     up1 = Conv2DTranspose(512, (2, 2), strides=(2, 2), padding='same')(bridge)
     concat_1 = concatenate([up1, base_VGG.get_layer("block4_conv3").output], axis=3)
     conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(concat_1)
@@ -51,26 +47,9 @@ def get_model(image_size, num_classes):
     conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(concat_4)
     conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
 
-    conv10 = Conv2D(num_classes, 3, padding="same", activation="softmax")(conv9) #HO CAMBIATO QUESTO    
+    conv10 = Conv2D(num_classes, 3, padding="same", activation="softmax")(conv9) 
 
 
-    model_ = Model(inputs=inputs, outputs=[conv10], name="VGG16_U-Net") #[base_VGG.input]
+    model_ = Model(inputs=base_VGG.inputs, outputs=[conv10], name="VGG16_U-Net") #you can specify inputs as "base_VGG.inputs" as well as "inputs"
 
-    #compile in the train program to make it easy to test with various loss functions
     return model_
-
-#https://github.com/bnsreenu/python_for_microscopists/blob/master/210_multiclass_Unet_using_VGG_resnet_inception.py
-# import segmentation_models as sm
-# def get_model_sm(num_classes):
-
-#     BACKBONE3 = 'vgg16'
-#     # preprocess_input3 = sm.get_preprocessing(BACKBONE3)
-
-#     # # preprocess input
-#     # X_train3 = preprocess_input3(X_train)
-#     # X_test3 = preprocess_input3(X_test)
-
-
-#     # define model
-#     model3 = sm.Unet(BACKBONE3, encoder_weights='imagenet', classes=num_classes, activation='softmax')
-#     return model3

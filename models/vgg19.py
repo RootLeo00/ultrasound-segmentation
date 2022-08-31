@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os
 from tabnanny import verbose
 import tensorflow as tf
@@ -46,18 +45,14 @@ def decoder_block(input, skip_features, num_filters):
 
 
 # Unet pre-trained model with VGG16 (weights: imagenet) 
-def get_model(image_size, num_classes):
-    # input: input_shape (height, width, channels) 
-    # return model
-    input_shape=image_size + (3,)
+def get_model(input_shape, num_classes):
 
     #layer di preproce3ssing input
     inputs = keras.Input(shape=input_shape)
     preprocess_input = tf.keras.applications.vgg19.preprocess_input(inputs)
-    input_shape = input_shape
     # load the VGG19 network, ensuring the head FC layer sets are left off
     """ Pre-trained VGG19 Model """
-    vgg19 = VGG19(include_top=False, weights="imagenet", input_tensor=preprocess_input)
+    vgg19 = VGG19(include_top=False, weights="imagenet", input_tensor=preprocess_input, input_shape=input_shape)
 
     #create top layer
     """ Encoder """
@@ -78,7 +73,7 @@ def get_model(image_size, num_classes):
     """ Output """
     outputs = Conv2D(num_classes, 3, padding="same", activation="softmax")(d4)
 
-    model = Model(inputs, outputs, name="VGG19_U-Net")
+    model = Model(vgg19.inputs, outputs, name="VGG19_U-Net")
     for layer in vgg19.layers:
         layer.trainable = False
 

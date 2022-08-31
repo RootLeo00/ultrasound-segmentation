@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from calendar import EPOCH
 import os
 from tabnanny import verbose

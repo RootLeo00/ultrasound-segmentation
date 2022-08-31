@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import datetime
 
 from main import IMAGE_SIZE, NUM_CLASSES, BATCH_SIZE, EPOCHS, MODEL_NAME, base_dir, model_dir, train_dir, test_dir, description
