@@ -13,16 +13,12 @@ def dir_path(string):
         raise NotADirectoryError(string)
 
 args=sys.argv[1:]
+parser = argparse.ArgumentParser(prog='PROG', usage='%(prog)s [options]')
 if args and args[0].startswith("-TP"):
         #PROG: TRAIN AND PREDICT
         parser = argparse.ArgumentParser(prog='TP', usage='%(prog)s [options]')
         parser.add_argument("-TP","--train-and-predict",
                             help="choose train and predict program", 
-                            action="store_true", 
-                            default=False
-                    )
-        parser.add_argument("-P","--only-predict",
-                            help="choose only predict program", 
                             action="store_true", 
                             default=False
                     )
@@ -63,11 +59,6 @@ if args and args[0].startswith("-TP"):
 elif args and args[0].startswith("-P"):
         #PROG: ONLY PREDICT
         parser = argparse.ArgumentParser(prog='P', usage='%(prog)s [options]')
-        parser.add_argument("-TP","--train-and-predict",
-                            help="choose train and predict program", 
-                            action="store_true", 
-                            default=False
-                    )
         parser.add_argument("-P","--only-predict",
                             help="choose only predict program", 
                             action="store_true", 
