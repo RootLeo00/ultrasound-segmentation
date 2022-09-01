@@ -26,22 +26,23 @@ elif MODEL_NAME == "TRANSFER_LEARNING_VGG16":
     # get_model_sm(num_classes=NUM_CLASSES)
 elif MODEL_NAME == "TRANSFER_LEARNING_VGG19":
     from models.vgg19 import get_model
-input_shape=(SIZE_X, SIZE_Y) + (3,)
+input_shape = (SIZE_X, SIZE_Y) + (3,)
 model = get_model(input_shape=input_shape, num_classes=NUM_CLASSES)
 
-train_params=dict()
+train_params = dict()
 
 
 def train():
     keras.backend.clear_session()
-    
+
     (train_images, train_masks) = get_train_dataset()
     # print("Class values in the dataset are ... ", np.unique(train_masks))  # 0 is the background/few unlabeled
 
     # minuto 20 di https://www.youtube.com/watch?v=F365vQ8EndQ
     train_masks_cat = to_categorical(train_masks, num_classes=NUM_CLASSES)
     train_masks_cat = train_masks_cat.reshape(
-        (train_masks.shape[0], train_masks.shape[1], train_masks.shape[2], NUM_CLASSES)
+        (train_masks.shape[0], train_masks.shape[1],
+         train_masks.shape[2], NUM_CLASSES)
     )
 
     # IMBALANCED CLASSIFICATION - CLASS WEIGHTS
@@ -96,7 +97,7 @@ def train():
 
     checkpoint_path = model_dir + "/" + MODEL_NAME + ".hdf5"
     monitor = "val_mean_iou"
-    mode="max"
+    mode = "max"
     cp_callback = ModelCheckpoint(
         filepath=checkpoint_path, verbose=1, monitor=monitor, mode=mode, save_best_only=True
     )
@@ -107,7 +108,8 @@ def train():
     )
 
     print("\n\n--------------FITTING--------------------------")
-    early_stopping = EarlyStopping(monitor=monitor, mode=mode,patience=20, verbose=1)
+    early_stopping = EarlyStopping(
+        monitor=monitor, mode=mode, patience=20, verbose=1)
     callbacks = [tensorboard_callback, cp_callback, early_stopping]
 
     history_TL = model.fit(
@@ -119,15 +121,16 @@ def train():
         validation_split=0.2,
         callbacks=callbacks,
     )
-    history_dict=history_TL.history
-    
-    # FINE TUNING
+    history_dict = history_TL.history
+
+    ## FINE TUNING#################################################
     if (
         MODEL_NAME == "TRANSFER_LEARNING_VGG16"
         or MODEL_NAME == "TRANSFER_LEARNING_VGG19"
     ):
         TL_checkpoint_path = model_dir + "/" + MODEL_NAME + ".hdf5"
-        TLmodel = load_model(TL_checkpoint_path, custom_objects={"mean_iou": mean_iou})
+        TLmodel = load_model(TL_checkpoint_path, custom_objects={
+                             "mean_iou": mean_iou})
         FTmodel = finetune_unfreezeall(TLmodel)
 
         # re-compile
@@ -145,14 +148,19 @@ def train():
             validation_split=0.2,
             callbacks=callbacks,
         )
-        train_params['history_FT']=history_FT.history
-        #concatenate transfer learning history with fine tuning history (parameters should be the same)
-        
-        for keyTL,keyFT in zip(history_TL.history, history_FT.history):
-            if(keyTL==keyFT):
-                # history_dict[keyTL].append(history_TL.history[keyTL])
-                [ history_dict[keyTL].append(elem) for elem in history_FT.history[keyFT]]
 
+        train_params['history_FT'] = history_FT.history
+
+        # concatenate transfer learning history with fine tuning history (parameters should be the same)
+
+        for keyTL, keyFT in zip(history_TL.history, history_FT.history):
+            if (keyTL == keyFT):
+                # history_dict[keyTL].append(history_TL.history[keyTL])
+                [history_dict[keyTL].append(elem)
+                 for elem in history_FT.history[keyFT]]
+        #################################################
+
+        
     # POST TRAINING ANALISYS - F1 SCORE METRIC
     for label in range(0, NUM_CLASSES):
         history_TL.history["f1score" + str(label)] = f1score_per_label(
@@ -161,32 +169,42 @@ def train():
         history_TL.history["val_f1score" + str(label)] = val_f1score_per_label(
             history_dict, label
         )
-    
+    #################################################
+
+    ##SAVE MODEL AND TRAIN FEATURES #########################
     # save keras.callbacks.History into json
     os.mkdir(pred_dir)
-    json.dump(history_dict, open(pred_dir + "/history.json", "w")) 
+    json.dump(history_dict, open(pred_dir + "/history.json", "w"))
 
     # save model
     model.save(model_dir + "/" + MODEL_NAME + ".hdf5")
 
-    #save train params
-    train_params['model']=(model)
-    train_params['optimizer']=(optimizer)
-    train_params['number_of_train_img']=(len(train_images))
-    train_params['loss']=(loss)
-    train_params['class_weights']=(class_weights)
-    train_params['metrics']=(metrics)
-    train_params['tensorboard_log_dir']=(log_dir)
-    train_params['callbacks']=(callbacks)
-    train_params['monitor']=(monitor)
-    train_params['history_TL']=(history_TL.history)
-    train_params['shape_train_imgs']=(train_images.shape)
-    train_params['shape_train_masks']=(train_masks.shape)
-    train_params['monitor']=(monitor)
+    # save a copy of the weights into the pred folder
+    model.save(pred_dir + "/" + MODEL_NAME + ".hdf5")
 
-#FOR "ONLY PREDICTIONS" PROGRAM
+    # save train params
+    train_params['model'] = (model)
+    train_params['optimizer'] = (optimizer)
+    train_params['number_of_train_img'] = (len(train_images))
+    train_params['loss'] = (loss)
+    train_params['class_weights'] = (class_weights)
+    train_params['metrics'] = (metrics)
+    train_params['tensorboard_log_dir'] = (log_dir)
+    train_params['callbacks'] = (callbacks)
+    train_params['monitor'] = (monitor)
+    train_params['history_TL'] = (history_TL.history)
+    train_params['shape_train_imgs'] = (train_images.shape)
+    train_params['shape_train_masks'] = (train_masks.shape)
+    train_params['monitor'] = (monitor)
+    #################################################
+
+# FOR "ONLY PREDICTIONS" PROGRAM
+
+
 def load_model_with_weights(weights_path):
     # Create model with weights from hdf5 file
     print(weights_path)
     model.load_weights(weights_path)
-
+    # save a copy of the weights into the pred folder
+    os.mkdir(pred_dir)
+    model.save(pred_dir + "/" + MODEL_NAME + ".hdf5")

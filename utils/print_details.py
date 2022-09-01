@@ -1,11 +1,11 @@
 import datetime
 
-from params import IMAGE_SIZE, NUM_CLASSES, BATCH_SIZE, EPOCHS, MODEL_NAME, base_dir,pred_dir, model_dir, train_dir, test_dir, description
+from params import IMAGE_SIZE, NUM_CLASSES, BATCH_SIZE, EPOCHS, MODEL_NAME, base_dir,pred_dir, model_dir, train_dir, test_dir, description, weights_path
 from utils.load_dataset import dataset_params
 from predict import pred_params
 from train import train_params
 
-def print_train_details():
+def print_only_predict_details():
     """
     Prints details of the model.
     """
@@ -27,8 +27,38 @@ def print_train_details():
             " train images loaded from: "+train_dir+"\n")
     f.write("Using "+str(dataset_params['num_test_images']) +
             " test images are loaded from: "+test_dir+"\n")
-    f.write("Shape of train images: "+     str(train_params['shape_train_imgs'])+"\n")
-    f.write("Shape of train masks: "+     str(train_params['shape_train_imgs'])+"\n")
+    f.write("Shape of test images: "+ str(pred_params['shape_test_imgs'])+"\n")
+    f.write("Shape of test masks: "+ str(pred_params['shape_test_imgs'])+"\n")
+    f.write("The model used for this prediction is: " + MODEL_NAME+"\n")
+    f.write("Model loaded with weights from: " +weights_path +"\n")
+    
+    f.write("\n--PREDICTIONS MODEL--\n")
+    f.write("prediction images and graphs are saved at: "+pred_dir+"\n")
+    f.write("\n--END--")
+    f.close()
+
+
+
+def print_train_details():
+    """
+    Prints details of the model.
+    """
+
+    f = open(pred_dir+"/prediction" +
+            datetime.datetime.now().strftime("%Y%m%d-%H%M%S")+".txt", "a")
+    f.write("--START--\n")
+    f.write("Using dataset at: "+base_dir+"\n")
+    f.write("IMAGE SIZE: "+str(IMAGE_SIZE)+"\n")
+    f.write("NUMBER OF CLASSES: "+str(NUM_CLASSES)+"\n")
+    f.write("BATCH SIZE: "+str(BATCH_SIZE)+"\n")
+    f.write("NUMBER OF EPOCHS: "+str(EPOCHS)+"\n")
+
+    f.write("****COMMENT****\n")
+    f.write(description)
+    f.write("\n*********\n")
+
+    f.write("Using "+str(dataset_params['num_test_images']) +
+            " test images are loaded from: "+test_dir+"\n")
     f.write("Shape of test images: "+     str(pred_params['shape_test_imgs'])+"\n")
     f.write("Shape of test masks: "+     str(pred_params['shape_test_imgs'])+"\n")
     f.write("The model used for this training is: " + MODEL_NAME+"\n")
@@ -54,6 +84,6 @@ def print_train_details():
     for key in train_params['history_FT'].keys():
         f.write(key+" : " + str(train_params['history_FT'][str(key)])+"\n")
     f.write("\n--PREDICTIONS MODEL--\n")
-    f.write("prediction images are saved at: "+pred_dir+"\n")
+    f.write("prediction images and graphs are saved at: "+pred_dir+"\n")
     f.write("\n--END--")
     f.close()

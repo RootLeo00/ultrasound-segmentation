@@ -1,7 +1,7 @@
 from params import weights_path, program
 from predict import predict_func
 from train import train, load_model_with_weights
-from utils.print_details import print_train_details
+from utils.print_details import print_train_details, print_only_predict_details
 def train_and_predict():
     train()
     predict_func()
@@ -13,6 +13,7 @@ def predict():
 if __name__ == "__main__":
     if program=='ONLY_PREDICT':
         predict()
+        print_only_predict_details()
     if program=='TRAIN_AND_PREDICT':
         train_and_predict()
         print_train_details()

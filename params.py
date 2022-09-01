@@ -4,7 +4,7 @@ import datetime
 import os
 
 import argparse
-#PROG: TRAIN AND PREDICT
+
 
 def dir_path(string):
     if os.path.isdir(string):
@@ -14,6 +14,7 @@ def dir_path(string):
 
 args=sys.argv[1:]
 if args and args[0].startswith("-TP"):
+        #PROG: TRAIN AND PREDICT
         parser = argparse.ArgumentParser(prog='TP', usage='%(prog)s [options]')
         parser.add_argument("-TP","--train-and-predict",
                             help="choose train and predict program", 
@@ -40,7 +41,7 @@ if args and args[0].startswith("-TP"):
                             nargs='?',
                             required=False,
                             help="general comment printed to log file",
-                            default="test raw",
+                            default="no comment",
                             )
         parser.add_argument("-d","--dir-dataset", 
                             nargs='+',
@@ -60,6 +61,7 @@ if args and args[0].startswith("-TP"):
                             help="absolute directory path where store results",
                             )
 elif args and args[0].startswith("-P"):
+        #PROG: ONLY PREDICT
         parser = argparse.ArgumentParser(prog='P', usage='%(prog)s [options]')
         parser.add_argument("-TP","--train-and-predict",
                             help="choose train and predict program", 
