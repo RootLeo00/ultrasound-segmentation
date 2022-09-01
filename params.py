@@ -5,6 +5,13 @@ import os
 
 import argparse
 #PROG: TRAIN AND PREDICT
+
+def dir_path(string):
+    if os.path.isdir(string):
+        return string
+    else:
+        raise NotADirectoryError(string)
+
 args=sys.argv[1:]
 if args and args[0].startswith("-TP"):
         parser = argparse.ArgumentParser(prog='TP', usage='%(prog)s [options]')
@@ -89,12 +96,14 @@ elif args and args[0].startswith("-P"):
         parser.add_argument("-d","--dir-dataset", 
                             nargs='+',
                             required=True,
+                            type=dir_path,
                             help="absolute directory path where dataset is stored",
                             )
         parser.add_argument("-s","--save-path", 
                             nargs='+',
                             required=False,
-                            default=os.path.dirname(parser.parse_args(args=args).model_weights[0].name),
+                            type=dir_path,
+                            default=parser.parse_args(args=args).dir_dataset[0],
                             help="absolute directory path where store results",
                             )
 args = parser.parse_args(args=args)

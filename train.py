@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 
 import numpy as np
 import tensorflow as tf
@@ -9,8 +10,8 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import to_categorical
 
-from params import (BATCH_SIZE, EPOCHS, IMAGE_SIZE, MODEL_NAME, NUM_CLASSES,
-                    model_dir)
+from params import (BATCH_SIZE, EPOCHS, IMAGE_SIZE, MODEL_NAME, NUM_CLASSES, SIZE_X, SIZE_Y,
+                    model_dir, pred_dir)
 from utils.fine_tuning import finetune_unfreezeall
 from utils.load_dataset import get_train_dataset
 from utils.metrics.f1_score import f1score_per_label, val_f1score_per_label
@@ -25,8 +26,10 @@ elif MODEL_NAME == "TRANSFER_LEARNING_VGG16":
     # get_model_sm(num_classes=NUM_CLASSES)
 elif MODEL_NAME == "TRANSFER_LEARNING_VGG19":
     from models.vgg19 import get_model
-input_shape=IMAGE_SIZE + (3,)
+input_shape=(SIZE_X, SIZE_Y) + (3,)
 model = get_model(input_shape=input_shape, num_classes=NUM_CLASSES)
+
+train_params=dict()
 
 
 def train():
@@ -57,6 +60,7 @@ def train():
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4, name="Adam")
     loss = "categorical_crossentropy"
+
     # TODO: ciclo for per le metriche
     metrics = [
         "accuracy",
@@ -141,7 +145,8 @@ def train():
             validation_split=0.2,
             callbacks=callbacks,
         )
-            #concatenate transfer learning history with fine tuning history (parameters should be the same)
+        train_params['history_FT']=history_FT.history
+        #concatenate transfer learning history with fine tuning history (parameters should be the same)
         
         for keyTL,keyFT in zip(history_TL.history, history_FT.history):
             if(keyTL==keyFT):
@@ -158,14 +163,30 @@ def train():
         )
     
     # save keras.callbacks.History into json
-    json.dump(history_dict, open(model_dir + "/history.json", "w"))
+    os.mkdir(pred_dir)
+    json.dump(history_dict, open(pred_dir + "/history.json", "w")) 
 
     # save model
     model.save(model_dir + "/" + MODEL_NAME + ".hdf5")
 
+    #save train params
+    train_params['model']=(model)
+    train_params['optimizer']=(optimizer)
+    train_params['number_of_train_img']=(len(train_images))
+    train_params['loss']=(loss)
+    train_params['class_weights']=(class_weights)
+    train_params['metrics']=(metrics)
+    train_params['tensorboard_log_dir']=(log_dir)
+    train_params['callbacks']=(callbacks)
+    train_params['monitor']=(monitor)
+    train_params['history_TL']=(history_TL.history)
+    train_params['shape_train_imgs']=(train_images.shape)
+    train_params['shape_train_masks']=(train_masks.shape)
+    train_params['monitor']=(monitor)
 
 #FOR "ONLY PREDICTIONS" PROGRAM
 def load_model_with_weights(weights_path):
     # Create model with weights from hdf5 file
     print(weights_path)
     model.load_weights(weights_path)
+

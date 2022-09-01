@@ -4,24 +4,30 @@ import os
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas
+from sklearn.metrics import multilabel_confusion_matrix
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import load_img
 
 from params import NUM_CLASSES, model_dir, pred_dir
 from train import model
-from utils.load_dataset import (
-    get_test_dataset,
-    test_input_img_paths,
-    test_mask_img_paths,
-)
+from utils.load_dataset import (get_test_dataset, test_input_img_paths,
+                                test_mask_img_paths)
+from utils.metrics.graph import graph
 
+pred_params=dict()
 
 # PREDICTION
 def predict_func():
-
-    os.mkdir(pred_dir)
+    
+    ##GENERATE PREDICTIONS###############################################################
+    if(not os.path.isdir(pred_dir)):
+        os.mkdir(pred_dir)
     (test_images, test_masks) = get_test_dataset()
     print("\n\n--------------PREDICT--------------------------")
+    pred_params['shape_test_imgs']=(test_images.shape)
+    pred_params['shape_test_masks']=(test_masks.shape)
+    
     
     # Generate predictions for all images in the test set
     mask_predictions = model.predict(test_images, verbose=2)
@@ -49,40 +55,42 @@ def predict_func():
         plt.imshow(mpimg.imread(fname=test_mask_img_paths[i]))
         plt.savefig(pred_dir + "/prediction_" + str(i) + ".png")
         # plt.show()
+        plt.close()
 
     for i in range(3):
         display_mask(i, mask_predictions)
-
+    ###############################################################
 
     ##EVALUATE PREDICTIONS #####################################################################
     history_dict = json.load(open(model_dir + "/history.json", "r"))
     # Mean IOU graph
-    # graph(history_dict,
-    #       title='Mean IoU Graph',
-    #       xlabel='Epochs',
-    #       ylabel='Mean IoU',
-    #       history_name='mean_iou',
-    #       history_val_name='val_mean_iou',
-    #       save_path=pred_dir+'/mean_iou_graph.png')
-    # # Accuracy graph
-    # graph(history_dict,
-    #       title='Accuracy Graph',
-    #       xlabel='Epochs',
-    #       ylabel='Accuracy',
-    #       history_name='accuracy',
-    #       history_val_name='val_accuracy',
-    #       save_path=pred_dir+'/accuracy_graph.png')
-    # # F1 Score graph per label
-    # for label in range(0, NUM_CLASSES):
-    #     graph(
-    #         history_dict,
-    #         title="F1 Score Graph For Label "+str(label),
-    #         xlabel="Epochs",
-    #         ylabel="F1 Score",
-    #         history_name="f1score"+str(label),
-    #         history_val_name="val_f1score"+str(label),
-    #         save_path=pred_dir + "/f1_score_"+str(label)+"_graph.png",
-    #     )
+    graph(history_dict,
+          title='Mean IoU Graph',
+          xlabel='Epochs',
+          ylabel='Mean IoU',
+          history_name='mean_iou',
+          history_val_name='val_mean_iou',
+          save_path=pred_dir+'/mean_iou_graph.png')
+    # Accuracy graph
+    graph(history_dict,
+          title='Accuracy Graph',
+          xlabel='Epochs',
+          ylabel='Accuracy',
+          history_name='accuracy',
+          history_val_name='val_accuracy',
+          save_path=pred_dir+'/accuracy_graph.png')
+    # F1 Score graph per label
+    for label in range(0, NUM_CLASSES):
+        graph(
+            history_dict,
+            title="F1 Score Graph For Label "+str(label),
+            xlabel="Epochs",
+            ylabel="F1 Score",
+            history_name="f1score"+str(label),
+            history_val_name="val_f1score"+str(label),
+            save_path=pred_dir + "/f1_score_"+str(label)+"_graph.png",
+        )
+    #################################################################
 
     ##CLASSIFICATION REPORT###############################################################
     from sklearn.metrics import classification_report
@@ -90,6 +98,34 @@ def predict_func():
     y_true=test_masks
     y_pred=np.argmax(mask_predictions, axis=-1)
     # print(multilabel_confusion_matrix(y_true.flatten('C'),y_pred.flatten('C'), labels=[0,1,2])) #TODO: array labels più carino
-    print(classification_report(y_true.flatten('C'),y_pred.flatten('C')))
+    # print(classification_report(y_true.flatten('C'),y_pred.flatten('C')))
+    #save classification  report on a file
+    report=classification_report(y_true.flatten('C'),y_pred.flatten('C'),  output_dict=True)
+    cm=multilabel_confusion_matrix(y_true.flatten('C'),y_pred.flatten('C'), labels=[0,1,2])
+    df = pandas.DataFrame(report).transpose() #leave transpose because csv file output gets transposed
+    # print(df.T)
+    df.to_csv(pred_dir+'/classification_report.csv')
+    index=0
+    for cm_i in cm:
+        df_confusion = pandas.DataFrame(cm_i).transpose()
+        df_confusion.to_csv(pred_dir+'/confusion_matrix'+str(index)+'.csv')
+        index=index+1
+    #################################################################
+
+
+    ##CONFUSION MATRIX ###############################################################
+    from sklearn.metrics import ConfusionMatrixDisplay
+    ConfusionMatrixDisplay.from_predictions(y_true.flatten('C'),y_pred.flatten('C'))
+    plt.savefig(pred_dir + "/multiclass_confusion_matrix.png")
+    # plt.show()
+    ###############################################################
+
+
+    ##TRAIN REPORT###############################################################
+    
+
+    ###############################################################
+
+
 
 

@@ -37,6 +37,6 @@ the corresponding labels, and saves the plot in save_path.
     plt.plot(history[history_val_name], colors["magenta"])
     plt.legend(["Train", "Validation"], loc="upper left", fontsize="large")
     plt.savefig(save_path)  # da lasciare prima di show()
-    plt.show()
+    # plt.show()
     plt.close()
 

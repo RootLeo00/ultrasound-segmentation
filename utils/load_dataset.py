@@ -5,6 +5,7 @@ import cv2
 
 from params import IMAGE_SIZE, train_dir, test_dir, SIZE_X, SIZE_Y
 
+dataset_params=dict()
 
 def get_path_arrays(dir_path, type):
     #TODO: check 'type' input
@@ -60,23 +61,29 @@ def load_data(IMAGE_SIZE, input_img_paths, mask_img_paths):
         # y[j] = y[j]/255.0
     return x, y
 
+# TODO: inizializzare meglio test_input_img_paths e test_mask_img_paths
+test_input_img_paths = get_path_arrays(test_dir, "input")
+test_mask_img_paths = get_path_arrays(test_dir, "mask")  # obv empty
+train_input_img_paths = get_path_arrays(train_dir, "input")
+train_mask_img_paths = get_path_arrays(train_dir, "mask")
+dataset_params['num_train_images']=(len(train_input_img_paths))
+dataset_params['num_test_images']=(len(test_input_img_paths))
+
 
 def get_train_dataset():
     """Returns tuple (input, target)"""
-    train_input_img_paths = get_path_arrays(train_dir, "input")
-    train_mask_img_paths = get_path_arrays(train_dir, "mask")
 
     (images,masks)= load_data_cv2(IMAGE_SIZE, train_input_img_paths, train_mask_img_paths)
 
-    # masks_input = np.expand_dims(masks, axis=3)
-    return images, masks
+    #TODO: watch https://www.youtube.com/watch?v=vgdFovAZUzM&t=3s
+    masks_input = np.expand_dims(masks, axis=3)
+    return images, masks_input
 
 
 def get_test_dataset():
     """Returns tuple (input, target)"""
 
-    test_input_img_paths = get_path_arrays(test_dir, "input")
-    test_mask_img_paths = get_path_arrays(test_dir, "mask")  # obv empty
+
 
     (images, masks) = load_data_cv2(
         IMAGE_SIZE, test_input_img_paths, test_mask_img_paths
@@ -84,12 +91,8 @@ def get_test_dataset():
     # masks_input = np.expand_dims(masks, axis=3)
     return images, masks
 
-# TODO: inizializzare meglio test_input_img_paths e test_mask_img_paths
-test_input_img_paths = get_path_arrays(test_dir, "input")
-test_mask_img_paths = get_path_arrays(test_dir, "mask")  # è ovviamente vuoto
 
-
-# https://github.com/bnsreenu/python_for_microscopists/blob/master/210_multiclass_Unet_using_VGG_resnet_inception.py
+# https://github.com/bnsreenu/python_for_microscopists/blob/master/159b_VGG16_imagenet_weights_RF_for_semantic.py
 # Capture training image info as a list
 # TODO:check by plotting images
 def load_data_cv2(IMAGE_SIZE, input_img_paths, mask_img_paths):
