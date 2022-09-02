@@ -90,6 +90,14 @@ def predict_func():
           history_name='loss',
           history_val_name='val_loss',
           save_path=pred_dir+'/loss_graph.png')
+    # AUC graph
+    graph(history_dict,
+          title='AUC Graph',
+          xlabel='Epochs',
+          ylabel='AUC',
+          history_name='auc',
+          history_val_name='val_auc',
+          save_path=pred_dir+'/auc_graph.png')
     # F1 Score graph per label
     for label in range(0, NUM_CLASSES):
         graph(
