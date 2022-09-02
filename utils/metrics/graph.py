@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import os
+import tikzplotlib
 
 # GRAPHS
 def graph(history, title, xlabel, ylabel, history_name, history_val_name, save_path):
@@ -37,6 +39,9 @@ the corresponding labels, and saves the plot in save_path.
     plt.plot(history[history_val_name], colors["magenta"])
     plt.legend(["Train", "Validation"], loc="upper left", fontsize="large")
     plt.savefig(save_path)  # da lasciare prima di show()
+    #save .tex pictures
+    filename, file_extension = os.path.splitext(save_path)
+    tikzplotlib.save(save_path.replace(file_extension, '.tex'))
     # plt.show()
     plt.close()
 
