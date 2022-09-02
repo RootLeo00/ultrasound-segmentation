@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import time
 
 import numpy as np
 import tensorflow as tf
@@ -11,11 +12,14 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import to_categorical
 
 from params import (BATCH_SIZE, EPOCHS, IMAGE_SIZE, MODEL_NAME, NUM_CLASSES, SIZE_X, SIZE_Y,
-                    model_dir, pred_dir)
+                    model_dir, pred_dir, patience, monitor)
 from utils.fine_tuning import finetune_unfreezeall
 from utils.load_dataset import get_train_dataset
 from utils.metrics.f1_score import f1score_per_label, val_f1score_per_label
 from utils.metrics.iou import mean_iou
+
+#TODO: change 'label' to 'class'
+
 
 # TODO: inizializzare meglio
 if MODEL_NAME == "UNET":
@@ -89,6 +93,13 @@ def train():
         tf.keras.metrics.Recall(name="recall0", class_id=0),
         tf.keras.metrics.Recall(name="recall1", class_id=1),
         tf.keras.metrics.Recall(name="recall2", class_id=2),
+        tf.keras.metrics.AUC(
+            curve='PR',
+            summation_method='interpolation',
+            name='auc',
+            multi_label=False, #Should be set to False for multi-class data
+        )
+
     ]
 
     model.compile(
@@ -96,7 +107,6 @@ def train():
     )
 
     checkpoint_path = model_dir + "/" + MODEL_NAME + ".hdf5"
-    monitor = "val_mean_iou"
     mode = "max"
     cp_callback = ModelCheckpoint(
         filepath=checkpoint_path, verbose=1, monitor=monitor, mode=mode, save_best_only=True
@@ -109,9 +119,10 @@ def train():
 
     print("\n\n--------------FITTING--------------------------")
     early_stopping = EarlyStopping(
-        monitor=monitor, mode=mode, patience=20, verbose=1)
+        monitor=monitor, mode=mode, patience=patience, verbose=1)
     callbacks = [tensorboard_callback, cp_callback, early_stopping]
 
+    start = time.time()
     history_TL = model.fit(
         x=train_images,
         y=train_masks_cat,
@@ -121,6 +132,9 @@ def train():
         validation_split=0.2,
         callbacks=callbacks,
     )
+    stop = time.time()
+    timeTL = stop - start
+    print(f"Fit TL time: {timeTL}s")
     history_dict = history_TL.history
 
     ## FINE TUNING#################################################
@@ -139,6 +153,7 @@ def train():
             optimizer=optimizer, loss=loss, loss_weights=class_weights, metrics=metrics
         )
 
+        start = time.time()
         history_FT = FTmodel.fit(
             x=train_images,
             y=train_masks_cat,
@@ -148,7 +163,9 @@ def train():
             validation_split=0.2,
             callbacks=callbacks,
         )
-
+        stop = time.time()
+        timeFT = stop - start
+        train_params['timeFT'] = timeFT
         train_params['history_FT'] = history_FT.history
 
         # concatenate transfer learning history with fine tuning history (parameters should be the same)
@@ -160,7 +177,6 @@ def train():
                  for elem in history_FT.history[keyFT]]
         #################################################
 
-        
     # POST TRAINING ANALISYS - F1 SCORE METRIC
     for label in range(0, NUM_CLASSES):
         history_TL.history["f1score" + str(label)] = f1score_per_label(
@@ -196,6 +212,9 @@ def train():
     train_params['shape_train_imgs'] = (train_images.shape)
     train_params['shape_train_masks'] = (train_masks.shape)
     train_params['monitor'] = (monitor)
+    train_params['timeTL'] = (timeTL)
+    train_params['patience'] = (patience)
+
     #################################################
 
 # FOR "ONLY PREDICTIONS" PROGRAM
