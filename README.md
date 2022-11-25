@@ -64,8 +64,8 @@ For the model, 3 different neural networks were tested and analyzed:
 │
 ├──  models  
 │    └── unet.py  - here's where basic unet model is defined.
-│    └── vg16.py  - here's where basic vgg16 model is defined.
-│    └── vgg19.py  - here's where basic vgg19 model is defined.
+│    └── vg16.py  - here's where vgg16 model is defined.
+│    └── vgg19.py  - here's where vgg19 model is defined.
 |
 |
 ├──  utils  
