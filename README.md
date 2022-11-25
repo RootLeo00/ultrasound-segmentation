@@ -76,9 +76,9 @@ For the model, 3 different neural networks were tested and analyzed:
 │    └── load_dataset.py  - here's the datasets file that is responsible for all data loading.
 │    └── metrics  
 │        └── dice_coef.py  - dice coefficient.
-│        └── iou.py  - dice coefficient.
-│        └── precision.py  - dice coefficient.
-│        └── recall.py  - dice coefficient.
+│        └── iou.py  - intersection over union metric.
+│        └── precision.py  - precision metric
+│        └── recall.py  - recall (or sensitivity) metric.
 ```
 
 
