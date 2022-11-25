@@ -62,6 +62,12 @@ For the model, 3 different neural networks were tested and analyzed:
 ├──  predict.py  - here's were trained model is tested making predictions and evaluating them with metrics.
 │
 │
+├──  models  
+│    └── unet.py  - here's where basic unet model is defined.
+│    └── vg16.py  - here's where basic vgg16 model is defined.
+│    └── vgg19.py  - here's where basic vgg19 model is defined.
+|
+|
 ├──  utils  
 │    └── fine_tuning.py  - here's where there are fine tuning functions for training.
 │    └── graph.py  - here's where graph of the metrics are plotted.
