@@ -4,10 +4,10 @@ from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, concatenate
 
-#DEFINE THE MODEL
+
 def get_model(input_shape, num_classes):
 
-    #layer di preprocessing input
+    #input preprocessing layer
     inputs = keras.Input(shape=input_shape)
     preprocess_input = tf.keras.applications.vgg16.preprocess_input(inputs)
     base_VGG = VGG16(

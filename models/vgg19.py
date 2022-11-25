@@ -5,7 +5,6 @@ from tensorflow.keras.layers import (Activation, BatchNormalization,
                                      Concatenate, Conv2D, Conv2DTranspose)
 from tensorflow.keras.models import Model
 
-#DEFINE THE MODEL
 
 def conv_block(input, num_filters):
     x = Conv2D(num_filters, 3, padding="same")(input)
@@ -29,7 +28,7 @@ def decoder_block(input, skip_features, num_filters):
 def get_model(input_shape, num_classes):
 
     #layer di preproce3ssing input
-    inputs = keras.Input(shape=input_shape)
+    inputs = keras.Input(shape=input_shape) #input_shape=(widht, height, channels)
     preprocess_input = tf.keras.applications.vgg19.preprocess_input(inputs)
     # load the VGG19 network, ensuring the head FC layer sets are left off
     """ Pre-trained VGG19 Model """

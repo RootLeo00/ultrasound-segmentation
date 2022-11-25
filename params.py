@@ -118,7 +118,7 @@ elif args and args[0].startswith("-P"):
                         )
 args = parser.parse_args(args=args)
 
-# TODO: inizializzare meglio
+#parameters initialization
 description = ''
 base_dir = ''
 weights_path = ''
@@ -135,11 +135,16 @@ pred_dir = args.save_path+"/predictions" + \
     datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
 if args.only_predict:
+    save_path, file_name=os.path.split(os.path.abspath(args.model_weights.name))
+    print(save_path)
     program = 'ONLY_PREDICT'
     description = args.comment
     base_dir = args.dir_dataset
     weights_path = args.model_weights.name
     MODEL_NAME = args.model_name
+    pred_dir = save_path+"/predictions" + \
+    datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    print(pred_dir)
 if args.train_and_predict:
     program = 'TRAIN_AND_PREDICT'
     description = args.comment

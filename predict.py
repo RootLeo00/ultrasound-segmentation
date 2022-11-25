@@ -14,12 +14,9 @@ from params import NUM_CLASSES, model_dir, pred_dir
 from train import model
 from utils.load_dataset import (get_test_dataset, test_input_img_paths,
                                 test_mask_img_paths)
-from utils.metrics.graph import graph
+from utils.graph import graph
 
 pred_params = dict()
-
-# PREDICTION
-
 
 def predict_func():
 
@@ -62,10 +59,9 @@ def predict_func():
 
     for i in range(3):
         display_mask(i, mask_predictions)
-    ###############################################################
 
     ##EVALUATE PREDICTIONS #####################################################################
-    history_dict = json.load(open(pred_dir + "/history.json", "r"))
+    history_dict = json.load(open(pred_dir + "/../history.json", "r")) #TODO: better path variables
     # Mean IOU graph
     graph(history_dict,
           title='Mean IoU Graph',
@@ -131,17 +127,12 @@ def predict_func():
             history_val_name="val_recall"+str(label),
             save_path=pred_dir + "/recall_"+str(label)+"_graph.png",
         )
-    #################################################################
 
-    ##CLASSIFICATION REPORT###############################################################
+
+    # plot classification report and multilabel confusion matrix
     from sklearn.metrics import classification_report
-    # TODO: mettere nomi alle classi
-    target_names = [('class '+str(i)) for i in range(0, NUM_CLASSES)]
     y_true = test_masks
     y_pred = np.argmax(mask_predictions, axis=-1)
-    # print(multilabel_confusion_matrix(y_true.flatten('C'),y_pred.flatten('C'), labels=[0,1,2])) #TODO: array labels più carino
-    # print(classification_report(y_true.flatten('C'),y_pred.flatten('C')))
-    # save classification  report on a file
     report = classification_report(y_true.flatten(
         'C'), y_pred.flatten('C'),  output_dict=True)
     cm = multilabel_confusion_matrix(y_true.flatten(
@@ -155,17 +146,14 @@ def predict_func():
         df_confusion = pandas.DataFrame(cm_i).transpose()
         df_confusion.to_csv(pred_dir+'/confusion_matrix'+str(index)+'.csv')
         index = index+1
-    #################################################################
 
-    ##CONFUSION MATRIX ###############################################################
+    # plot confusion matrix
     from sklearn.metrics import ConfusionMatrixDisplay
     ConfusionMatrixDisplay.from_predictions(
         y_true.flatten('C'), y_pred.flatten('C'))
     cm_savepath = pred_dir + "/multiclass_confusion_matrix.png"
     plt.savefig(cm_savepath)
-    # save .tex pictures
+    # save .tex pictures for latex 
     filename, file_extension = os.path.splitext(cm_savepath)
     tikzplotlib.save(cm_savepath.replace(file_extension, '.tex'))
-    # plt.show()
-    ###############################################################
 

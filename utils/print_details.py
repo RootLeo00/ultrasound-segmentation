@@ -7,7 +7,7 @@ from train import train_params
 
 def print_only_predict_details():
     """
-    Prints details of the model.
+    Prints details of the model into a file of only predict program.
     """
 
     f = open(pred_dir+"/prediction" +
@@ -41,7 +41,7 @@ def print_only_predict_details():
 
 def print_train_details():
     """
-    Prints details of the model.
+    Prints details of the model into a file of only predict program.
     """
 
     f = open(pred_dir+"/prediction" +
