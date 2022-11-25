@@ -83,5 +83,5 @@ For the model, 3 different neural networks were tested and analyzed:
 
 
 # Contributing
-Any kind of enhancement or contribution is welcomed. Please be kind: kindness is the best tool you can use to learn.
+Any kind of enhancement or contribution is welcomed. Please be kind: kindness is the best tool you can use to teach and learn.
 
