@@ -42,6 +42,7 @@ python3 main.py -TP --help
 Every dataset consists of 60 images featuring sagittal sections of the metacarpus, made by a Dr. at the Rizzoli Orthopedic Institute in Bologna.
 The images were manually labeled by the author. 
 Down below there is an image showing the 3 different configurations (from the top, tendon-bone, tendon-synovyal, synovial-bone):
+![alt text](https://github.com/RootLeo00/ultrasound_ML/blob/master/dataset_img_example.png?raw=true)
 
 
 Notice that, since they are Imbalanced Datasets, there are some strategies used to overcome the problem of Imbalanced Classification.
