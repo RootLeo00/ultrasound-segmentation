@@ -45,7 +45,7 @@ Down below there is an image showing the 3 different configurations (from the to
 
 
 Notice that, since they are Imbalanced Datasets, there are some strategies used to overcome the problem of Imbalanced Classification.
-For privacy reasons, the dataset cannot be published, but you can request at caterina.leonelli2@studi.unibo.it
+For privacy reasons, the dataset cannot be published, but you can request at caterina.leonelli2@studio.unibo.it
 
 For the model, 3 different neural networks were tested and analyzed:
 • **U-net** 
