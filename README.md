@@ -84,5 +84,4 @@ For the model, 3 different neural networks were tested and analyzed:
 
 # Contributing
 Any kind of enhancement or contribution is welcomed. Please be kind: kindness is the best tool you can use to learn.
-<img width="480" height="360" src="https://giphy.com/gifs/publixgreenwisemarket-earth-eco-day-q5oN9XOTr5RGxmXYQY">
 
