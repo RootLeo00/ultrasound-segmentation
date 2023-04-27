@@ -53,6 +53,8 @@ For the model, 3 different neural networks were tested and analyzed:
 • **VGG16**
 • **VGG19**
 
+The trained model weights are published at https://drive.google.com/drive/folders/1sU6Hb010B5N4LGwzxsQf2CnL5WYcANld?usp=sharing
+
 
 # In Details
 ```
