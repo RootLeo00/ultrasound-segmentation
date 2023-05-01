@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Leonelli"
+  given-names: "Caterina"
+- family-names: "Notarstefano"
+  given-names: "Giuseppe"
+  orcid: "https://orcid.org/0000-0002-0906-7848"
+- family-names: "Sforni"
+  given-names: "Lorenzo"
+  orcid: "https://orcid.org/0000-0002-9910-4525"
+- family-names: "Camisa"
+  given-names: "Andrea"
+  orcid: "https://orcid.org/0000-0001-8524-2540"
+title: "Multiclass Semantic Segmentation of Ultrasound Images"
+version: 1.0.0
+date-released: 2022-10-06
+url: "https://github.com/RootLeo00/ultrasound-segmentation"
