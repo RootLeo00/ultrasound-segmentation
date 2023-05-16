@@ -20,9 +20,12 @@ Also as the dataset is unbalanced it was necessary to use other more appropriate
 
 
 # Table Of Contents
--  [About the project](#about-the-project)
--  [In Details](#in-details)
--  [Contributing](#contributing)
+- [Multiclass Semantic Segmentation of Ultrasound Images](#multiclass-semantic-segmentation-of-ultrasound-images)
+- [Requirements](#requirements)
+- [Table Of Contents](#table-of-contents)
+- [About the project](#about-the-project)
+- [In Details](#in-details)
+- [Contributing](#contributing)
 
 
 # About the project 
@@ -52,8 +55,6 @@ For the model, 3 different neural networks were tested and analyzed:
 • **U-net** 
 • **VGG16**
 • **VGG19**
-
-The trained model weights are published at https://drive.google.com/drive/folders/1sU6Hb010B5N4LGwzxsQf2CnL5WYcANld?usp=sharing
 
 
 # In Details
@@ -85,5 +86,6 @@ The trained model weights are published at https://drive.google.com/drive/folder
 
 
 # Contributing
-Any kind of enhancement or contribution is welcomed. Please be kind: kindness is the best tool you can use to teach and learn.
-
+Any kind of enhancement or contribution is welcomed. 
+You can reach me out at caterina.leonelli2@studio.unibo.it
+Please be kind: kindness is the best tool you can use to teach and learn.
