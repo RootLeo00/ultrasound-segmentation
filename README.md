@@ -1,12 +1,17 @@
 # Multiclass Semantic Segmentation of Ultrasound Images
-The purpose of this thesis is to implement and analyze a case of use of Deep Learning techniques for the semantic segmentation of ultrasound images. 
-The dataset used is made up of ultrasounds of the hands taken from the Orthopedic Institute Rizzoli (IOR) in Bologna (Italy). 
-The data consists of hand images, where each image is manually annotated with 3 different labels. The 3 classes are: bone, synovial cavity and tendon.
-We tried three different neural networks as models: base U-net and VGG16 or VGG19 with the shape of a U-net. 
-The input to the network is a size image 224 x 224 x 3 and the output is a 3-dimensional vector corresponding to the class probabilities predictions for each of the 3 classes. 
-The model was trained on a small test set of 60 images. 
-The results showed that the VGG16 neural network has been able to achieve an accuracy of more than 90.0% on both the training set and the test set. 
-Also as the dataset is unbalanced it was necessary to use other more appropriate metrics to evaluate predictions such as precision, recall and F1-score.
+The purpose of this thesis is to implement and analyze a use case of Deep Learning tech-
+niques for the semantic segmentation of ultrasound images. The dataset used consists of
+hand ultrasound images obtained from the database of the Rizzoli Orthopedic Institute.
+The data consists of hand images, where each image has been manually annotated with
+three different labels. The three classes are: bone, synoviuml cavity, and tendon.
+To train the Deep Learning models, a convolutional neural network (CNN) architecture
+of the U-net type has been used. The input for the network is an image with dimensions
+224 x 224 x 3, and the output is a 3-dimensional vector corresponding to the predicted class
+probabilities for each of the three classes. The trained model was then evaluated on a test
+set of 60 images. The results showed that the network was able to achieve an accuracy of
+over 90.0% on both the training and test sets. Furthermore, since the dataset is imbalanced,
+other prediction evaluation metrics besides accuracy, such as the F1-score, were necessary,
+achieving an average value greater than 90.0%.
 
 
 # Requirements
@@ -82,6 +87,11 @@ For the model, 3 different neural networks were tested and analyzed:
 │        └── iou.py  - intersection over union metric.
 │        └── precision.py  - precision metric
 │        └── recall.py  - recall (or sensitivity) metric.
+│
+│
+├──  report  
+│    └── final-report-english.pdf  - technical report of this project (English version).
+     └── final-report-italian.pdf  - technical report of this project (Italian version). This is the official thesis.
 ```
 
 
